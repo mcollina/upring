@@ -1,0 +1,34 @@
+{
+  "name": "upring",
+  "version": "0.0.1",
+  "description": "easy application sharding, in a ring",
+  "main": "upring.js",
+  "scripts": {
+    "test": "standard && tap test.js"
+  },
+  "precommit": "test",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mcollina/upring.git"
+  },
+  "keywords": [
+    "ring",
+    "hashring",
+    "consistent",
+    "hash",
+    "swim",
+    "gossip",
+    "streams"
+  ],
+  "author": "Matteo Collina <hello@matteocollina.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mcollina/upring/issues"
+  },
+  "homepage": "https://github.com/mcollina/upring#readme",
+  "devDependencies": {
+    "pre-commit": "^1.1.2",
+    "standard": "^6.0.8",
+    "tap": "^5.7.0"
+  }
+}
