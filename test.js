@@ -6,6 +6,7 @@ const fs = require('fs')
 const path = require('path')
 const upring = require('./')
 const packageFile = path.join(__dirname, 'package.json')
+const maxInt = Math.pow(2, 32) - 1
 
 function opts (opts) {
   opts = opts || {}
@@ -162,5 +163,45 @@ test('streams with error', { timeout: 5000 }, (t) => {
         }
       })
     })
+  })
+})
+
+test('client', { timeout: 5000 }, (t) => {
+  t.plan(6)
+
+  bootTwo(t, (i1, i2) => {
+    const client = upring(opts({
+      client: true,
+      base: [i1.whoami(), i2.whoami()]
+    }))
+
+    t.tearDown(client.close.bind(client))
+
+    client.on('up', () => {
+      t.pass('client up')
+
+      for (var i = 0; i < maxInt; i += 1000) {
+        if (client.allocatedToMe(i)) {
+          t.fail('nothing should be allocated to a client')
+          return
+        }
+      }
+
+      client.request({
+        key: 'hello'
+      }, (err, res) => {
+        t.error(err)
+        t.equal(res.hello, 'world')
+        t.notEqual(res.from, client.whoami())
+      })
+    })
+
+    i1.on('request', handle)
+    i2.on('request', handle)
+    client.on('request', handle)
+
+    function handle (req, reply) {
+      reply(null, { hello: 'world', from: this.whoami() })
+    }
   })
 })

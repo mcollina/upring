@@ -18,6 +18,7 @@ function Upring (opts) {
   const hashringOpts = opts.hashring || {}
   hashringOpts.base = hashringOpts.base || opts.base
   hashringOpts.name = hashringOpts.name || opts.name
+  hashringOpts.client = hashringOpts.client || opts.client
 
   const handle = (req, reply) => {
     this.emit('request', req, reply)
