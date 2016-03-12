@@ -7,9 +7,9 @@ const net = require('net')
 const tentacoli = require('tentacoli')
 const pump = require('pump')
 
-function Upring (opts) {
-  if (!(this instanceof Upring)) {
-    return new Upring(opts)
+function UpRing (opts) {
+  if (!(this instanceof UpRing)) {
+    return new UpRing(opts)
   }
 
   opts = opts || {}
@@ -48,17 +48,17 @@ function Upring (opts) {
   this._peers = {}
 }
 
-inherits(Upring, EE)
+inherits(UpRing, EE)
 
-Upring.prototype.whoami = function () {
+UpRing.prototype.whoami = function () {
   return this._hashring.whoami()
 }
 
-Upring.prototype.allocatedToMe = function (key) {
+UpRing.prototype.allocatedToMe = function (key) {
   return this._hashring.allocatedToMe(key)
 }
 
-Upring.prototype.request = function (obj, callback) {
+UpRing.prototype.request = function (obj, callback) {
   if (this._hashring.allocatedToMe(obj.key)) {
     this.emit('request', obj, callback)
   } else {
@@ -81,7 +81,7 @@ Upring.prototype.request = function (obj, callback) {
   }
 }
 
-Upring.prototype.close = function (cb) {
+UpRing.prototype.close = function (cb) {
   Object.keys(this._peers).forEach((id) => {
     this._peers[id].destroy()
   })
@@ -89,4 +89,4 @@ Upring.prototype.close = function (cb) {
   this._server.close(cb)
 }
 
-module.exports = Upring
+module.exports = UpRing
