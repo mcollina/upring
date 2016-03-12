@@ -129,3 +129,38 @@ test('streams!', { timeout: 5000 }, (t) => {
     })
   })
 })
+
+test('streams with error', { timeout: 5000 }, (t) => {
+  t.plan(7)
+
+  bootTwo(t, (i1, i2) => {
+    let i2Key = getKey(i2)
+
+    i1.request({
+      key: i2Key,
+      hello: 42
+    }, (err, response) => {
+      t.error(err)
+      t.equal(response.replying, 'i2', 'response matches')
+      response.streams$.p
+        .on('error', () => {
+          t.pass('error happened')
+        })
+        .pipe(concat((list) => {
+          t.fail('stream should never end')
+        }))
+    })
+
+    i2.on('request', (req, reply) => {
+      t.equal(req.key, i2Key, 'key matches')
+      t.equal(req.hello, 42, 'other key matches')
+      let stream = fs.createReadStream('path/to/nowhere')
+      reply(null, {
+        replying: 'i2',
+        streams$: {
+          p: stream
+        }
+      })
+    })
+  })
+})
