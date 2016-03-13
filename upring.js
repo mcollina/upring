@@ -40,6 +40,9 @@ function UpRing (opts) {
     this._hashring.on('up', () => {
       this.emit('up')
     })
+    this._hashring.on('move', (info) => {
+      this.emit('move', info)
+    })
     this._hashring.on('error', this.emit.bind(this, 'error'))
   })
 
