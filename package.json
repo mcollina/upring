@@ -1,6 +1,6 @@
 {
   "name": "upring",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "streams at scale",
   "main": "upring.js",
   "scripts": {
