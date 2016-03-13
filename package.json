@@ -1,7 +1,7 @@
 {
   "name": "upring",
-  "version": "0.1.0",
-  "description": "easy application sharding, in a ring",
+  "version": "0.1.1",
+  "description": "streams at scale",
   "main": "upring.js",
   "scripts": {
     "test": "standard && tap test.js"
