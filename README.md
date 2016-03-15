@@ -36,8 +36,8 @@ client.on('up', () => {
       console.log(err.message)
       return
     }
-    response.streams$.out.pipe(process.stdout)
-    response.streams$.out.on('end', () => {
+    response.streams.out.pipe(process.stdout)
+    response.streams.out.on('end', () => {
       process.exit(0)
     })
   })
@@ -63,7 +63,7 @@ server.on('up', () => {
 
 server.on('request', (req, reply) => {
   reply(null, {
-    streams$: {
+    streams: {
       out: fs.createReadStream(__filename)
     }
   })
@@ -112,7 +112,7 @@ when finished as second argument:
 instance.on('request', (req, reply) => {
   reply(null, {
     a: 'response',
-    streams$: {
+    streams: {
       any: stream
     }
   })
@@ -133,7 +133,7 @@ occurred.
 ```js
 instance.request({
   key: 'some data',
-  streams$: {
+  streams: {
     in: fs.createWriteStream('out')
   }
 }, (err) => {
