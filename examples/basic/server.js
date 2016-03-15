@@ -15,7 +15,7 @@ server.on('up', () => {
 server.on('request', (req, reply) => {
   console.log('received req', req)
   reply(null, {
-    streams$: {
+    streams: {
       out: fs.createReadStream(__filename)
     }
   })

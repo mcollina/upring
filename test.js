@@ -111,7 +111,7 @@ test('streams!', { timeout: 5000 }, (t) => {
     }, (err, response) => {
       t.error(err)
       t.equal(response.replying, 'i2', 'response matches')
-      response.streams$.p
+      response.streams.p
         .pipe(concat((list) => {
           t.equal(list.toString(), fs.readFileSync(packageFile).toString())
         }))
@@ -123,7 +123,7 @@ test('streams!', { timeout: 5000 }, (t) => {
       let stream = fs.createReadStream(packageFile)
       reply(null, {
         replying: 'i2',
-        streams$: {
+        streams: {
           p: stream
         }
       })
@@ -143,7 +143,7 @@ test('streams with error', { timeout: 5000 }, (t) => {
     }, (err, response) => {
       t.error(err)
       t.equal(response.replying, 'i2', 'response matches')
-      response.streams$.p
+      response.streams.p
         .on('error', () => {
           t.pass('error happened')
         })
@@ -158,7 +158,7 @@ test('streams with error', { timeout: 5000 }, (t) => {
       let stream = fs.createReadStream('path/to/nowhere')
       reply(null, {
         replying: 'i2',
-        streams$: {
+        streams: {
           p: stream
         }
       })

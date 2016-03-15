@@ -20,8 +20,8 @@ client.on('up', () => {
       console.log(err.message)
       return
     }
-    response.streams$.out.pipe(process.stdout)
-    response.streams$.out.on('end', () => {
+    response.streams.out.pipe(process.stdout)
+    response.streams.out.on('end', () => {
       process.exit(0)
     })
   })

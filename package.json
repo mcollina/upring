@@ -36,6 +36,6 @@
     "end-of-stream": "^1.1.0",
     "pump": "^1.0.1",
     "swim-hashring": "^0.1.1",
-    "tentacoli": "^0.2.2"
+    "tentacoli": "^0.4.0"
   }
 }
