@@ -6,6 +6,7 @@ const inherits = require('util').inherits
 const net = require('net')
 const tentacoli = require('tentacoli')
 const pump = require('pump')
+const networkAddress = require('network-address')
 
 function UpRing (opts) {
   if (!(this instanceof UpRing)) {
@@ -14,11 +15,13 @@ function UpRing (opts) {
 
   opts = opts || {}
   opts.port = opts.port || 0
+  opts.host = opts.host || networkAddress()
 
   const hashringOpts = opts.hashring || {}
   hashringOpts.base = hashringOpts.base || opts.base
   hashringOpts.name = hashringOpts.name || opts.name
   hashringOpts.client = hashringOpts.client || opts.client
+  hashringOpts.host = opts.host
 
   const handle = (req, reply) => {
     this.emit('request', req, reply)
@@ -29,11 +32,11 @@ function UpRing (opts) {
     pump(stream, instance, stream)
     instance.on('request', handle)
   })
-  this._server.listen(opts.port, () => {
+  this._server.listen(opts.port, opts.host, () => {
     const local = hashringOpts.local = hashringOpts.local || {}
     const meta = local.meta = local.meta || {}
     meta.upring = {
-      address: this._server.address().address,
+      address: opts.host,
       port: this._server.address().port
     }
     this._hashring = hashring(hashringOpts)
