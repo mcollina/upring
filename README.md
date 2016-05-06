@@ -104,6 +104,9 @@ Events:
 * `move`: see
   [swim-hashring](http://github.com/mcollina/swim-hashring) `'move'`
 event.
+* `steal`: see
+  [swim-hashring](http://github.com/mcollina/swim-hashring) `'steal'`
+event.
 * `request`: when a request comes in to be handled by the current
   node. It has the request object as first argument, a function to call
 when finished as second argument:

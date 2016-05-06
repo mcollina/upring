@@ -46,6 +46,9 @@ function UpRing (opts) {
     this._hashring.on('move', (info) => {
       this.emit('move', info)
     })
+    this._hashring.on('steal', (info) => {
+      this.emit('steal', info)
+    })
     this._hashring.on('error', this.emit.bind(this, 'error'))
   })
 

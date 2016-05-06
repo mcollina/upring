@@ -29,14 +29,14 @@
   "devDependencies": {
     "concat-stream": "^1.5.1",
     "pre-commit": "^1.1.2",
-    "standard": "^6.0.8",
+    "standard": "^7.0.0",
     "tap": "^5.7.0"
   },
   "dependencies": {
     "end-of-stream": "^1.1.0",
     "network-address": "^1.1.0",
     "pump": "^1.0.1",
-    "swim-hashring": "^0.1.1",
+    "swim-hashring": "^0.2.0",
     "tentacoli": "^0.4.0"
   }
 }
