@@ -1,4 +1,4 @@
-![logo-url][logo-url]
+![logo][logo-url]
 
 # upring
 
@@ -172,8 +172,8 @@ Close the current instance
 
 MIT
 
-[logo-url]: https://raw.githubusercontent.com/mcollina/upring/master/upring.svg
-[npm-badge]: https://badge.fury.io/js/steed.svg
+[logo-url]: https://raw.githubusercontent.com/mcollina/upring/master/upring.png
+[npm-badge]: https://badge.fury.io/js/upring.svg
 [npm-url]: https://badge.fury.io/js/upring
 [travis-badge]: https://api.travis-ci.org/mcollina/upring.svg
 [travis-url]: https://travis-ci.org/mcollina/upring
