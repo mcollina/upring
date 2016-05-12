@@ -6,6 +6,7 @@ const inherits = require('util').inherits
 const net = require('net')
 const tentacoli = require('tentacoli')
 const pump = require('pump')
+const dezalgo = require('dezalgo')
 const networkAddress = require('network-address')
 
 function UpRing (opts) {
@@ -69,6 +70,7 @@ UpRing.prototype.allocatedToMe = function (key) {
 
 UpRing.prototype.request = function (obj, callback) {
   if (this._hashring.allocatedToMe(obj.key)) {
+    callback = dezalgo(callback)
     this.emit('request', obj, callback)
   } else {
     let peer = this._hashring.lookup(obj.key)

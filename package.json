@@ -33,6 +33,7 @@
     "tap": "^5.7.0"
   },
   "dependencies": {
+    "dezalgo": "^1.0.3",
     "end-of-stream": "^1.1.0",
     "network-address": "^1.1.0",
     "pump": "^1.0.1",
