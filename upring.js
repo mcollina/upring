@@ -68,6 +68,22 @@ UpRing.prototype.allocatedToMe = function (key) {
   return this._hashring.allocatedToMe(key)
 }
 
+UpRing.prototype.peerConn = function (peer) {
+  let conn = this._peers[peer.id]
+
+  if (!conn) {
+    const upring = peer.meta.upring
+    const stream = net.connect(upring.port, upring.address)
+    conn = tentacoli()
+    pump(stream, conn, stream, () => {
+      delete this._peers[peer.id]
+    })
+    this._peers[peer.id] = conn
+  }
+
+  return conn
+}
+
 UpRing.prototype.request = function (obj, callback) {
   if (this._hashring.allocatedToMe(obj.key)) {
     callback = dezalgo(callback)
@@ -80,16 +96,10 @@ UpRing.prototype.request = function (obj, callback) {
       return
     }
 
-    if (this._peers[peer.id]) {
-      this._peers[peer.id].request(obj, callback)
-    } else {
-      let stream = net.connect(upring.port, upring.address)
-      let instance = tentacoli()
-      pump(stream, instance, stream)
-      this._peers[peer.id] = instance
-      instance.request(obj, callback)
-    }
+    this.peerConn(peer).request(obj, callback)
   }
+
+  return this
 }
 
 UpRing.prototype.close = function (cb) {
@@ -98,6 +108,8 @@ UpRing.prototype.close = function (cb) {
   })
   this._hashring.close()
   this._server.close(cb)
+
+  return this
 }
 
 module.exports = UpRing
