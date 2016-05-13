@@ -37,7 +37,7 @@
     "end-of-stream": "^1.1.0",
     "network-address": "^1.1.0",
     "pump": "^1.0.1",
-    "swim-hashring": "^0.2.0",
+    "swim-hashring": "^0.3.0",
     "tentacoli": "^0.4.0"
   }
 }
