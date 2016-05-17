@@ -5,58 +5,13 @@ const concat = require('concat-stream')
 const fs = require('fs')
 const path = require('path')
 const upring = require('..')
+const helper = require('./helper')
 const packageFile = path.join(__dirname, '..', 'package.json')
 const maxInt = Math.pow(2, 32) - 1
 
-function opts (opts) {
-  opts = opts || {}
-  opts.hashring = opts.hashring || {}
-  opts.hashring.joinTimeout = 200
-  return opts
-}
-
-// returns a key allocated to the passed instance
-function getKey (instance) {
-  let key = 'hello'
-
-  while (!instance.allocatedToMe(key)) {
-    key += '1'
-  }
-
-  return key
-}
-
-function boot (t, parent, cb) {
-  if (typeof parent === 'function') {
-    cb = parent
-    parent = null
-  }
-
-  const base = []
-  if (parent) {
-    base.push(parent.whoami())
-  }
-
-  const instance = upring(opts({
-    base: base
-  }))
-
-  t.tearDown(instance.close.bind(instance))
-
-  instance.on('up', () => {
-    cb(instance)
-  })
-}
-
-function bootTwo (t, cb) {
-  boot(t, (i1) => {
-    t.pass('i1 up')
-    boot(t, i1, (i2) => {
-      t.pass('i2 up')
-      cb(i1, i2)
-    })
-  })
-}
+const getKey = helper.getKey
+const bootTwo = helper.bootTwo
+const opts = helper.opts
 
 test('request to two nodes', { timeout: 5000 }, (t) => {
   t.plan(10)

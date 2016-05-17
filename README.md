@@ -35,7 +35,7 @@ client.on('up', () => {
     // the same key will always go to the same host
     // if it is online or until new servers come online
     key: 'a key',
-    hello: 42
+    cmd: 'read'
   }, (err, response) => {
     if (err) {
       console.log(err.message)
@@ -66,7 +66,7 @@ server.on('up', () => {
   console.log('server up at', server.whoami())
 })
 
-server.on('request', (req, reply) => {
+server.add({ cmd: 'read' }, (req, reply) => {
   reply(null, {
     streams: {
       out: fs.createReadStream(__filename)
@@ -83,6 +83,7 @@ run a base node. It also avalailable as a tiny docker image.
 
   * <a href="#constructor"><code><b>upring()</b></code></a>
   * <a href="#request"><code>instance.<b>request()</b></code></a>
+  * <a href="#add"><code>instance.<b>add()</b></code></a>
   * <a href="#whoami"><code>instance.<b>whoami()</b></code></a>
   * <a href="#allocatedToMe"><code>instance.<b>allocatedToMe()</b></code></a>
   * <a href="#close"><code>instance.<b>close()</b></code></a>
@@ -113,7 +114,7 @@ event.
   [swim-hashring](http://github.com/mcollina/swim-hashring) `'steal'`
 event.
 * `request`: when a request comes in to be handled by the current
-  node. It has the request object as first argument, a function to call
+  node, if the router is not configured. It has the request object as first argument, a function to call
 when finished as second argument:
 
 ```js
@@ -151,6 +152,33 @@ instance.request({
 
 See [tentacoli](http://github.com/mcollina/tentacoli) for the full
 details on the request/response format.
+
+<a name="add"></a>
+### instance.add(pattern, func)
+
+Execute the given function when the received received requests
+matches the given pattern. The request is matched using
+[bloomrun](https://github.com/mcollina/bloomrun), e.g. in insertion
+order.
+
+After a call to `add`, any non-matching messages will return an error to
+the caller.
+
+Setting up any pattern-matching routes disables the `'request'`
+event.
+
+Example:
+
+```js
+instance.add({ cmd: 'parse' }, (req, reply) => {
+  reply(null, {
+    a: 'response',
+    streams: {
+      any: stream
+    }
+  })
+})
+```
 
 <a name="whoami"></a>
 ### instance.whoami()

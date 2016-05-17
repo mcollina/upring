@@ -14,7 +14,7 @@ const client = upring({
 client.on('up', () => {
   client.request({
     key: 'a key',
-    hello: 42
+    cmd: 'read'
   }, (err, response) => {
     if (err) {
       console.log(err.message)

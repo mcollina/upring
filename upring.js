@@ -8,6 +8,7 @@ const tentacoli = require('tentacoli')
 const pump = require('pump')
 const dezalgo = require('dezalgo')
 const networkAddress = require('network-address')
+const bloomrun = require('bloomrun')
 
 function UpRing (opts) {
   if (!(this instanceof UpRing)) {
@@ -24,14 +25,24 @@ function UpRing (opts) {
   hashringOpts.client = hashringOpts.client || opts.client
   hashringOpts.host = opts.host
 
-  const handle = (req, reply) => {
-    this.emit('request', req, reply)
+  this._dispatch = (req, reply) => {
+    var func
+    if (this._router) {
+      func = this._router.lookup(req)
+      if (func) {
+        func(req, reply)
+      } else {
+        reply(new Error('message does not match any pattern'))
+      }
+    } else {
+      this.emit('request', req, reply)
+    }
   }
 
   this._server = net.createServer((stream) => {
     const instance = tentacoli()
     pump(stream, instance, stream)
-    instance.on('request', handle)
+    instance.on('request', this._dispatch)
   })
   this._server.listen(opts.port, opts.host, () => {
     const local = hashringOpts.local = hashringOpts.local || {}
@@ -86,8 +97,7 @@ UpRing.prototype.peerConn = function (peer) {
 
 UpRing.prototype.request = function (obj, callback) {
   if (this._hashring.allocatedToMe(obj.key)) {
-    callback = dezalgo(callback)
-    this.emit('request', obj, callback)
+    this._dispatch(obj, dezalgo(callback))
   } else {
     let peer = this._hashring.lookup(obj.key)
     let upring = peer.meta.upring
@@ -100,6 +110,13 @@ UpRing.prototype.request = function (obj, callback) {
   }
 
   return this
+}
+
+UpRing.prototype.add = function (pattern, func) {
+  if (!this._router) {
+    this._router = bloomrun()
+  }
+  this._router.add(pattern, func)
 }
 
 UpRing.prototype.close = function (cb) {
