@@ -4,8 +4,8 @@ const test = require('tap').test
 const concat = require('concat-stream')
 const fs = require('fs')
 const path = require('path')
-const upring = require('./')
-const packageFile = path.join(__dirname, 'package.json')
+const upring = require('..')
+const packageFile = path.join(__dirname, '..', 'package.json')
 const maxInt = Math.pow(2, 32) - 1
 
 function opts (opts) {

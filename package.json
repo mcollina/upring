@@ -4,7 +4,7 @@
   "description": "streams at scale",
   "main": "upring.js",
   "scripts": {
-    "test": "standard && tap test.js"
+    "test": "standard && tap test"
   },
   "precommit": "test",
   "repository": {
