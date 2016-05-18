@@ -12,7 +12,7 @@ server.on('up', () => {
   console.log('server up at', server.whoami())
 })
 
-server.on('request', (req, reply) => {
+server.add({ cmd: 'read' }, (req, reply) => {
   console.log('received req', req)
   reply(null, {
     streams: {

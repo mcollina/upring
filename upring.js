@@ -8,6 +8,7 @@ const tentacoli = require('tentacoli')
 const pump = require('pump')
 const dezalgo = require('dezalgo')
 const networkAddress = require('network-address')
+const bloomrun = require('bloomrun')
 
 function UpRing (opts) {
   if (!(this instanceof UpRing)) {
@@ -24,14 +25,24 @@ function UpRing (opts) {
   hashringOpts.client = hashringOpts.client || opts.client
   hashringOpts.host = opts.host
 
-  const handle = (req, reply) => {
-    this.emit('request', req, reply)
+  this._dispatch = (req, reply) => {
+    var func
+    if (this._router) {
+      func = this._router.lookup(req)
+      if (func) {
+        func(req, reply)
+      } else {
+        reply(new Error('message does not match any pattern'))
+      }
+    } else {
+      this.emit('request', req, reply)
+    }
   }
 
   this._server = net.createServer((stream) => {
     const instance = tentacoli()
     pump(stream, instance, stream)
-    instance.on('request', handle)
+    instance.on('request', this._dispatch)
   })
   this._server.listen(opts.port, opts.host, () => {
     const local = hashringOpts.local = hashringOpts.local || {}
@@ -68,10 +79,25 @@ UpRing.prototype.allocatedToMe = function (key) {
   return this._hashring.allocatedToMe(key)
 }
 
+UpRing.prototype.peerConn = function (peer) {
+  let conn = this._peers[peer.id]
+
+  if (!conn) {
+    const upring = peer.meta.upring
+    const stream = net.connect(upring.port, upring.address)
+    conn = tentacoli()
+    pump(stream, conn, stream, () => {
+      delete this._peers[peer.id]
+    })
+    this._peers[peer.id] = conn
+  }
+
+  return conn
+}
+
 UpRing.prototype.request = function (obj, callback) {
   if (this._hashring.allocatedToMe(obj.key)) {
-    callback = dezalgo(callback)
-    this.emit('request', obj, callback)
+    this._dispatch(obj, dezalgo(callback))
   } else {
     let peer = this._hashring.lookup(obj.key)
     let upring = peer.meta.upring
@@ -80,16 +106,17 @@ UpRing.prototype.request = function (obj, callback) {
       return
     }
 
-    if (this._peers[peer.id]) {
-      this._peers[peer.id].request(obj, callback)
-    } else {
-      let stream = net.connect(upring.port, upring.address)
-      let instance = tentacoli()
-      pump(stream, instance, stream)
-      this._peers[peer.id] = instance
-      instance.request(obj, callback)
-    }
+    this.peerConn(peer).request(obj, callback)
   }
+
+  return this
+}
+
+UpRing.prototype.add = function (pattern, func) {
+  if (!this._router) {
+    this._router = bloomrun()
+  }
+  this._router.add(pattern, func)
 }
 
 UpRing.prototype.close = function (cb) {
@@ -98,6 +125,8 @@ UpRing.prototype.close = function (cb) {
   })
   this._hashring.close()
   this._server.close(cb)
+
+  return this
 }
 
 module.exports = UpRing
