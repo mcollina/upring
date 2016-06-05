@@ -160,3 +160,30 @@ test('client', { timeout: 5000 }, (t) => {
     }
   })
 })
+
+test('request to node 2', { timeout: 5000 }, (t) => {
+  t.plan(8)
+
+  bootTwo(t, (i1, i2) => {
+    t.equal(i1.peers().length, 1, 'there is only one other peer')
+    t.equal(i1.peers()[0].id, i2.id, 'the other peer is i2')
+
+    i1.on('request', (req, reply) => {
+      t.fail('no request should happen to i1')
+      reply(new Error('no request should happen to i1'))
+    })
+
+    i2.on('request', (req, reply) => {
+      t.pass('request to i2')
+      t.deepEqual(req, { hello: 'world' }, 'correct message')
+      reply(null, { a: 'response' })
+    })
+
+    i1.peerConn(i1.peers()[0]).request({
+      hello: 'world'
+    }, (err, res) => {
+      t.error(err)
+      t.deepEqual(res, { a: 'response' })
+    })
+  })
+})

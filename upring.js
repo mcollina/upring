@@ -95,6 +95,10 @@ UpRing.prototype.peerConn = function (peer) {
   return conn
 }
 
+UpRing.prototype.peers = function () {
+  return this._hashring.peers()
+}
+
 UpRing.prototype.request = function (obj, callback) {
   if (this._hashring.allocatedToMe(obj.key)) {
     this._dispatch(obj, dezalgo(callback))

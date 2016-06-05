@@ -83,6 +83,8 @@ run a base node. It also avalailable as a tiny docker image.
 
   * <a href="#constructor"><code><b>upring()</b></code></a>
   * <a href="#request"><code>instance.<b>request()</b></code></a>
+  * <a href="#peerConn"><code>instance.<b>peerConn()</b></code></a>
+  * <a href="#peers"><code>instance.<b>peers()</b></code></a>
   * <a href="#add"><code>instance.<b>add()</b></code></a>
   * <a href="#whoami"><code>instance.<b>whoami()</b></code></a>
   * <a href="#allocatedToMe"><code>instance.<b>allocatedToMe()</b></code></a>
@@ -152,6 +154,32 @@ instance.request({
 
 See [tentacoli](http://github.com/mcollina/tentacoli) for the full
 details on the request/response format.
+
+<a name="peers"></a>
+### instance.peers()
+
+All the other peers, as computed by [swim-hashring](http://github.com/mcollina/swim-hashring).
+
+Example:
+
+```js
+console.log(instance.peers().map((peer) => peer.id))
+```
+
+<a name="peerConn"></a>
+### instance.peerConn(peer)
+
+Return the connection for the peer.
+See [tentacoli](http://github.com/mcollina/tentacoli) for the full
+details on the API.
+
+Example:
+
+```js
+instance.peerConn(instance.peers()[0]).request({
+  hello: 'world'
+}, console.log))
+```
 
 <a name="add"></a>
 ### instance.add(pattern, func)
