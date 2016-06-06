@@ -73,10 +73,17 @@ server.add({ cmd: 'read' }, (req, reply) => {
     }
   })
 })
+
+//or using the sugar free syntax
+server.add('write', (req, reply) => {
+  reply(null, {
+    answering: 'foo'
+  })
+})
 ```
 
 We recommend using [baseswim](http://github.com/mcollina/baseswim) to
-run a base node. It also avalailable as a tiny docker image.
+run a base node. It also available as a tiny docker image.
 
 <a name="api"></a>
 ## API
@@ -199,6 +206,21 @@ Example:
 
 ```js
 instance.add({ cmd: 'parse' }, (req, reply) => {
+  reply(null, {
+    a: 'response',
+    streams: {
+      any: stream
+    }
+  })
+})
+```
+
+For convenience a command can also be defined by a `string`.
+
+Example:
+
+```js
+instance.add('parse', (req, reply) => {
   reply(null, {
     a: 'response',
     streams: {

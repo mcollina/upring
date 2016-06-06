@@ -120,6 +120,11 @@ UpRing.prototype.add = function (pattern, func) {
   if (!this._router) {
     this._router = bloomrun()
   }
+
+  if (typeof pattern === 'string') {
+    pattern = { cmd: pattern }
+  }
+
   this._router.add(pattern, func)
 }
 
