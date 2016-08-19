@@ -50,12 +50,18 @@ test('using the request router', { timeout: 5000 }, (t) => {
 })
 
 test('use the sugar notation for pattern', { timeout: 5000 }, (t) => {
-  t.plan(2)
+  t.plan(4)
 
   bootTwo(t, (i1, i2) => {
     let i1Key = getKey(i1)
 
-    i1.request({
+    i1.add('sugar', (req, reply) => {
+      t.equal(req.key, i1Key, 'Match made')
+      t.equal(req.value, 1, 'Value matches')
+      reply(null, { replying: 'i1' })
+    })
+
+    i2.request({
       key: i1Key,
       cmd: 'sugar',
       value: 1
@@ -65,11 +71,30 @@ test('use the sugar notation for pattern', { timeout: 5000 }, (t) => {
         replying: 'i1'
       }, 'response matches')
     })
+  })
+})
 
-    i1.add('sugar', (req, reply) => {
+test('use tinysonic for pattern', { timeout: 5000 }, (t) => {
+  t.plan(4)
+
+  bootTwo(t, (i1, i2) => {
+    let i1Key = getKey(i1)
+
+    i1.add('cmd:sugar', (req, reply) => {
       t.equal(req.key, i1Key, 'Match made')
       t.equal(req.value, 1, 'Value matches')
       reply(null, { replying: 'i1' })
+    })
+
+    i2.request({
+      key: i1Key,
+      cmd: 'sugar',
+      value: 1
+    }, (err, response) => {
+      t.error(err, 'NO ERROR')
+      t.deepEqual(response, {
+        replying: 'i1'
+      }, 'response matches')
     })
   })
 })

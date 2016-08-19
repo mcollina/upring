@@ -9,6 +9,7 @@ const pump = require('pump')
 const dezalgo = require('dezalgo')
 const networkAddress = require('network-address')
 const bloomrun = require('bloomrun')
+const tinysonic = require('tinysonic')
 
 function UpRing (opts) {
   if (!(this instanceof UpRing)) {
@@ -122,7 +123,13 @@ UpRing.prototype.add = function (pattern, func) {
   }
 
   if (typeof pattern === 'string') {
-    pattern = { cmd: pattern }
+    let sonic = tinysonic(pattern)
+
+    if (sonic) {
+      pattern = sonic
+    } else {
+      pattern = { cmd: pattern }
+    }
   }
 
   this._router.add(pattern, func)
