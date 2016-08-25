@@ -26,6 +26,8 @@ function UpRing (opts) {
   hashringOpts.client = hashringOpts.client || opts.client
   hashringOpts.host = opts.host
 
+  this._inbound = new Set()
+
   this._dispatch = (req, reply) => {
     var func
     if (this._router) {
@@ -41,8 +43,16 @@ function UpRing (opts) {
   }
 
   this._server = net.createServer((stream) => {
+    if (this.closed) {
+      stream.destroy()
+      return
+    }
+
     const instance = tentacoli()
-    pump(stream, instance, stream)
+    this._inbound.add(instance)
+    pump(stream, instance, stream, () => {
+      this._inbound.delete(instance)
+    })
     instance.on('request', this._dispatch)
   })
   this._server.listen(opts.port, opts.host, () => {
@@ -88,8 +98,15 @@ UpRing.prototype.peerConn = function (peer) {
     const stream = net.connect(upring.port, upring.address)
     conn = tentacoli()
     pump(stream, conn, stream, () => {
+      conn._pending.forEach((msg) => {
+        setTimeout(() => {
+          this.request(msg.obj, msg.callback, msg._count)
+        }, 100 * msg._count)
+      })
       delete this._peers[peer.id]
     })
+
+    conn._pending = new Set()
     this._peers[peer.id] = conn
   }
 
@@ -100,7 +117,7 @@ UpRing.prototype.peers = function () {
   return this._hashring.peers()
 }
 
-UpRing.prototype.request = function (obj, callback) {
+UpRing.prototype.request = function (obj, callback, _count) {
   if (this._hashring.allocatedToMe(obj.key)) {
     this._dispatch(obj, dezalgo(callback))
   } else {
@@ -111,7 +128,24 @@ UpRing.prototype.request = function (obj, callback) {
       return
     }
 
-    this.peerConn(peer).request(obj, callback)
+    // TODO simplify all this logic
+    // and avoid allocating a closure
+    if (typeof _count !== 'number') {
+      _count = 0
+    } else if (_count === 3) {
+      callback(new Error('retried three times'))
+      return
+    } else {
+      _count++
+    }
+
+    const conn = this.peerConn(peer)
+    const msg = { obj, callback, _count }
+    conn._pending.add(msg)
+    conn.request(obj, function (err, result) {
+      conn._pending.delete(msg)
+      callback(err, result)
+    })
   }
 
   return this
@@ -136,13 +170,27 @@ UpRing.prototype.add = function (pattern, func) {
 }
 
 UpRing.prototype.close = function (cb) {
+  cb = cb || noop
+
+  if (this.closed) {
+    return cb()
+  }
+
+  this.closed = true
+
   Object.keys(this._peers).forEach((id) => {
     this._peers[id].destroy()
+  })
+
+  this._inbound.forEach((s) => {
+    s.destroy()
   })
   this._hashring.close()
   this._server.close(cb)
 
   return this
 }
+
+function noop () {}
 
 module.exports = UpRing

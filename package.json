@@ -28,6 +28,7 @@
   "homepage": "https://github.com/mcollina/upring#readme",
   "devDependencies": {
     "concat-stream": "^1.5.1",
+    "flush-write-stream": "^1.0.0",
     "pre-commit": "^1.1.2",
     "standard": "^7.0.0",
     "tap": "^6.3.2"

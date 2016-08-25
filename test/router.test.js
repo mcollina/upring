@@ -50,7 +50,7 @@ test('using the request router', { timeout: 5000 }, (t) => {
 })
 
 test('use the sugar notation for pattern', { timeout: 5000 }, (t) => {
-  t.plan(4)
+  t.plan(6)
 
   bootTwo(t, (i1, i2) => {
     let i1Key = getKey(i1)
@@ -75,7 +75,7 @@ test('use the sugar notation for pattern', { timeout: 5000 }, (t) => {
 })
 
 test('use tinysonic for pattern', { timeout: 5000 }, (t) => {
-  t.plan(4)
+  t.plan(6)
 
   bootTwo(t, (i1, i2) => {
     let i1Key = getKey(i1)
