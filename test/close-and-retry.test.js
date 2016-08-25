@@ -7,6 +7,27 @@ const helper = require('./helper')
 
 const getKey = helper.getKey
 const bootTwo = helper.bootTwo
+const boot = helper.boot
+
+function pubsub (i) {
+  const streams = new Set()
+  i.add('cmd:subscribe', subscribe)
+  i.add('cmd:publish', publish)
+
+  function subscribe (req, reply) {
+    const stream = req.streams.messages
+    streams.add(stream)
+    eos(stream, function () {
+      streams.delete(stream)
+    })
+    reply()
+  }
+
+  function publish (req, reply) {
+    streams.forEach((s) => s.write(req.payload))
+    reply()
+  }
+}
 
 test('closing a persistent stream', { timeout: 5000 }, (t) => {
   t.plan(10)
@@ -32,7 +53,7 @@ test('closing a persistent stream', { timeout: 5000 }, (t) => {
         })
       })
 
-      i1.request({
+      i2.request({
         cmd: 'subscribe',
         key: i1Key,
         streams: {
@@ -41,7 +62,7 @@ test('closing a persistent stream', { timeout: 5000 }, (t) => {
       }, function () {
         t.pass('subcribed again')
 
-        i1.request({
+        i2.request({
           cmd: 'publish',
           key: i1Key,
           payload: {
@@ -62,7 +83,7 @@ test('closing a persistent stream', { timeout: 5000 }, (t) => {
     }, function (err) {
       t.error(err)
 
-      i1.request({
+      i2.request({
         cmd: 'publish',
         key: i1Key,
         payload: {
@@ -77,24 +98,78 @@ test('closing a persistent stream', { timeout: 5000 }, (t) => {
       })
     })
   })
+})
 
-  function pubsub (i) {
-    const streams = new Set()
-    i.add('cmd:subscribe', subscribe)
-    i.add('cmd:publish', publish)
+test('retry and move a persistent stream', { timeout: 5000 }, (t) => {
+  t.plan(10)
 
-    function subscribe (req, reply) {
-      const stream = req.streams.messages
-      streams.add(stream)
-      eos(stream, function () {
-        streams.delete(stream)
+  bootTwo(t, (i1, i2) => {
+    boot(t, i1, (i3) => {
+      let i1Key = getKey(i1)
+
+      pubsub(i1)
+      pubsub(i2)
+      pubsub(i3)
+
+      const stream = writable.obj(function (chunk, enc, cb) {
+        t.deepEqual(chunk, {
+          some: 'data'
+        })
       })
-      reply()
-    }
 
-    function publish (req, reply) {
-      streams.forEach((s) => s.write(req.payload))
-      reply()
-    }
-  }
+      eos(stream, function () {
+        t.pass('stream closed')
+
+        const stream = writable.obj(function (chunk, enc, cb) {
+          t.deepEqual(chunk, {
+            some: 'data'
+          })
+        })
+
+        i3.request({
+          cmd: 'subscribe',
+          key: i1Key,
+          streams: {
+            messages: stream
+          }
+        }, function (err) {
+          t.error(err, 'subcribed again')
+
+          i2.request({
+            cmd: 'publish',
+            key: i1Key,
+            payload: {
+              some: 'data'
+            }
+          }, function (err) {
+            t.error(err, 'published successfully')
+          })
+        })
+      })
+
+      i3.request({
+        cmd: 'subscribe',
+        key: i1Key,
+        streams: {
+          messages: stream
+        }
+      }, function (err) {
+        t.error(err)
+
+        i2.request({
+          cmd: 'publish',
+          key: i1Key,
+          payload: {
+            some: 'data'
+          }
+        }, function (err) {
+          t.error(err, 'published successfully')
+
+          i1.close(function () {
+            t.pass('closed')
+          })
+        })
+      })
+    })
+  })
 })

@@ -63,6 +63,8 @@ function UpRing (opts) {
       port: this._server.address().port
     }
     this._hashring = hashring(hashringOpts)
+    // needed because of request retrials
+    this._hashring.setMaxListeners(0)
     this._hashring.on('up', () => {
       this.emit('up')
     })
@@ -98,12 +100,16 @@ UpRing.prototype.peerConn = function (peer) {
     const stream = net.connect(upring.port, upring.address)
     conn = tentacoli()
     pump(stream, conn, stream, () => {
-      conn._pending.forEach((msg) => {
-        setTimeout(() => {
-          this.request(msg.obj, msg.callback, msg._count)
-        }, 100 * msg._count)
-      })
-      delete this._peers[peer.id]
+      const deliver = (peerDown) => {
+        if (peerDown.id === peer.id) {
+          delete this._peers[peer.id]
+          this._hashring.removeListener('peerDown', deliver)
+          conn._pending.forEach((msg) => {
+            this.request(msg.obj, msg.callback, msg._count)
+          })
+        }
+      }
+      this._hashring.on('peerDown', deliver)
     })
 
     conn._pending = new Set()
@@ -141,7 +147,14 @@ UpRing.prototype.request = function (obj, callback, _count) {
 
     const conn = this.peerConn(peer)
     const msg = { obj, callback, _count }
+
     conn._pending.add(msg)
+
+    if (conn.destroyed) {
+      // avoid calling, the retry mechanism will kick in
+      return
+    }
+
     conn.request(obj, function (err, result) {
       conn._pending.delete(msg)
       callback(err, result)
