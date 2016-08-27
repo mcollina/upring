@@ -98,24 +98,60 @@ UpRing.prototype.peerConn = function (peer) {
   if (!conn) {
     const upring = peer.meta.upring
     const stream = net.connect(upring.port, upring.address)
-    conn = tentacoli()
-    pump(stream, conn, stream, () => {
-      const deliver = (peerDown) => {
-        if (peerDown.id === peer.id) {
-          delete this._peers[peer.id]
-          this._hashring.removeListener('peerDown', deliver)
-          conn._pending.forEach((msg) => {
-            this.request(msg.obj, msg.callback, msg._count)
-          })
-        }
-      }
-      this._hashring.on('peerDown', deliver)
-    })
-
-    conn._pending = new Set()
-    this._peers[peer.id] = conn
+    conn = setupConn(this, peer, stream)
   }
 
+  return conn
+}
+
+function setupConn (that, peer, stream, retry) {
+  const conn = tentacoli()
+
+  pump(stream, conn, stream, function () {
+    var nustream = null
+    that._hashring.on('peerDown', onPeerDown)
+
+    if (!retry) {
+      nustream = net.connect(peer.meta.upring.port, peer.meta.upring.address)
+      nustream.on('connect', onConnect)
+      nustream.on('error', onError)
+    }
+
+    function deliver () {
+      conn._pending.forEach(function (msg) {
+        that.request(msg.obj, msg.callback, msg._count)
+      })
+    }
+
+    function onPeerDown (peerDown) {
+      if (peerDown.id === peer.id) {
+        delete that._peers[peer.id]
+        that._hashring.removeListener('peerDown', onPeerDown)
+        if (nustream) {
+          nustream.destroy()
+        }
+        deliver()
+      }
+    }
+
+    function onConnect () {
+      setupConn(that, peer, nustream, true)
+      that._hashring.removeListener('peerDown', onPeerDown)
+      deliver()
+    }
+
+    function onError () {
+      // do nothing, let's wait for peerDown
+      // TODO that might never come, how to signal the hashring?
+    }
+  })
+
+  setTimeout(function () {
+    retry = true
+  }, 10 * 1000).unref() // 10 seconds
+
+  conn._pending = new Set()
+  that._peers[peer.id] = conn
   return conn
 }
 
