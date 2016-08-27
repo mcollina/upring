@@ -148,6 +148,8 @@ current enquiry will be picked by the `key` property in `obj`.
 Callback will be called when a response is received, or an error
 occurred.
 
+Example:
+
 ```js
 instance.request({
   key: 'some data',
@@ -161,6 +163,12 @@ instance.request({
 
 See [tentacoli](http://github.com/mcollina/tentacoli) for the full
 details on the request/response format.
+
+#### Retry logic
+
+If the target instance fails while _waiting for a response_, the message
+will be sent to the next peer in the ring. This does not applies to
+streams, which will be closed or errored.
 
 <a name="peers"></a>
 ### instance.peers()
