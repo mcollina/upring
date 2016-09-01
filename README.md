@@ -95,6 +95,7 @@ run a base node. It also available as a tiny docker image.
   * <a href="#add"><code>instance.<b>add()</b></code></a>
   * <a href="#whoami"><code>instance.<b>whoami()</b></code></a>
   * <a href="#allocatedToMe"><code>instance.<b>allocatedToMe()</b></code></a>
+  * <a href="#logger"><code>instance.<b>logger</b></code></a>
   * <a href="#close"><code>instance.<b>close()</b></code></a>
 
 <a name="constructor"></a>
@@ -112,6 +113,8 @@ Options:
 * `name`: alias for `hashring.name`.
 * `port`: the tcp port to listen to for the RPC communications,
   it is allocated dynamically and discovered via gossip by default.
+* `logLevel`: the level for the embedded logger; default `'info'`.
+* `logger`: a [pino][pino] instance to log stuff to.
 
 Events:
 
@@ -254,6 +257,11 @@ Returns `true` or `false` depending if the given key has been allocated to this 
 
 Close the current instance
 
+<a name="logger"></a>
+### instance.logger
+
+A [pino][pino] instance to log stuff to.
+
 ## License
 
 MIT
@@ -263,3 +271,4 @@ MIT
 [npm-url]: https://badge.fury.io/js/upring
 [travis-badge]: https://api.travis-ci.org/mcollina/upring.svg
 [travis-url]: https://travis-ci.org/mcollina/upring
+[pino]: https://github.com/mcollina/pino
