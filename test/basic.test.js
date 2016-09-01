@@ -127,6 +127,7 @@ test('client', { timeout: 5000 }, (t) => {
   bootTwo(t, (i1, i2) => {
     const client = upring(opts({
       client: true,
+      logLevel: 'error',
       base: [i1.whoami(), i2.whoami()]
     }))
 

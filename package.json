@@ -38,6 +38,7 @@
     "end-of-stream": "^1.1.0",
     "fastzalgo": "^1.0.0",
     "network-address": "^1.1.0",
+    "pino": "^2.8.3",
     "pump": "^1.0.1",
     "swim-hashring": "^0.4.0",
     "tentacoli": "^0.5.0",

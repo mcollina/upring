@@ -37,6 +37,7 @@ function boot (t, parent, cb) {
   }
 
   const instance = upring(opts({
+    logLevel: 'error',
     base: base
   }))
 
