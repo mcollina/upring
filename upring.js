@@ -6,10 +6,11 @@ const inherits = require('util').inherits
 const net = require('net')
 const tentacoli = require('tentacoli')
 const pump = require('pump')
-const dezalgo = require('dezalgo')
+const dezalgo = require('fastzalgo')
 const networkAddress = require('network-address')
 const bloomrun = require('bloomrun')
 const tinysonic = require('tinysonic')
+const pino = require('pino')
 
 function UpRing (opts) {
   if (!(this instanceof UpRing)) {
@@ -27,6 +28,11 @@ function UpRing (opts) {
   hashringOpts.host = opts.host
 
   this._inbound = new Set()
+  this.logger = opts.logger || pino()
+
+  if (!opts.logger) {
+    this.logger.level = opts.logLevel || 'info'
+  }
 
   this._dispatch = (req, reply) => {
     var func
@@ -48,14 +54,18 @@ function UpRing (opts) {
       return
     }
 
+    this.logger.debug({ address: stream.address() }, 'incoming connection')
+
     const instance = tentacoli()
     this._inbound.add(instance)
     pump(stream, instance, stream, () => {
+      this.logger.debug({ address: stream.address() }, 'closed connection')
       this._inbound.delete(instance)
     })
     instance.on('request', this._dispatch)
   })
   this._server.listen(opts.port, opts.host, () => {
+    this.logger.debug({ address: this._server.address() }, 'listening')
     const local = hashringOpts.local = hashringOpts.local || {}
     const meta = local.meta = local.meta || {}
     meta.upring = {
@@ -66,12 +76,16 @@ function UpRing (opts) {
     // needed because of request retrials
     this._hashring.setMaxListeners(0)
     this._hashring.on('up', () => {
+      this.logger = this.logger.child({ id: this.whoami() })
+      this.logger.info({ address: this._server.address() }, 'node up')
       this.emit('up')
     })
     this._hashring.on('move', (info) => {
+      this.logger.trace(info, 'move')
       this.emit('move', info)
     })
     this._hashring.on('steal', (info) => {
+      this.logger.trace(info, 'steal')
       this.emit('steal', info)
     })
     this._hashring.on('error', this.emit.bind(this, 'error'))
@@ -96,6 +110,7 @@ UpRing.prototype.peerConn = function (peer) {
   let conn = this._peers[peer.id]
 
   if (!conn) {
+    this.logger.debug({ peer: peer }, 'connecting to peer')
     const upring = peer.meta.upring
     const stream = net.connect(upring.port, upring.address)
     conn = setupConn(this, peer, stream)
@@ -108,16 +123,19 @@ function setupConn (that, peer, stream, retry) {
   const conn = tentacoli()
 
   pump(stream, conn, stream, function () {
+    that.logger.debug({ peer: peer }, 'peer disconnected')
     var nustream = null
     that._hashring.on('peerDown', onPeerDown)
 
     if (!retry) {
+      that.logger.debug({ peer: peer }, 'reconnecting to peer')
       nustream = net.connect(peer.meta.upring.port, peer.meta.upring.address)
       nustream.on('connect', onConnect)
       nustream.on('error', onError)
     }
 
     function deliver () {
+      that.logger.debug({ peer: peer }, 'resending messsages')
       conn._pending.forEach(function (msg) {
         that.request(msg.obj, msg.callback, msg._count)
       })
@@ -125,6 +143,7 @@ function setupConn (that, peer, stream, retry) {
 
     function onPeerDown (peerDown) {
       if (peerDown.id === peer.id) {
+        that.logger.debug({ peer: peer }, 'peer down')
         delete that._peers[peer.id]
         that._hashring.removeListener('peerDown', onPeerDown)
         if (nustream) {
@@ -135,6 +154,7 @@ function setupConn (that, peer, stream, retry) {
     }
 
     function onConnect () {
+      that.logger.debug({ peer: peer }, 'reconnected')
       setupConn(that, peer, nustream, true)
       that._hashring.removeListener('peerDown', onPeerDown)
       deliver()
@@ -161,9 +181,12 @@ UpRing.prototype.peers = function () {
 
 UpRing.prototype.request = function (obj, callback, _count) {
   if (this._hashring.allocatedToMe(obj.key)) {
+    this.logger.trace({ msg: obj }, 'local call')
     this._dispatch(obj, dezalgo(callback))
   } else {
     let peer = this._hashring.lookup(obj.key)
+    this.logger.trace({ msg: obj, peer }, 'remote call')
+
     let upring = peer.meta.upring
     if (!upring || !upring.address || !upring.port) {
       callback(new Error('peer has invalid upring metadata'))
@@ -235,7 +258,10 @@ UpRing.prototype.close = function (cb) {
     s.destroy()
   })
   this._hashring.close()
-  this._server.close(cb)
+  this._server.close((err) => {
+    this.logger.info('closed')
+    cb(err)
+  })
 
   return this
 }
