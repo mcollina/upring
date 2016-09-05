@@ -5,25 +5,23 @@ const tracker = require('../lib/tracker')
 const farmhash = require('farmhash')
 
 test('track a value on the ring', (t) => {
-  t.plan(3)
+  t.plan(2)
 
   const instance = tracker({
     hash: farmhash.hash32,
     allocatedToMe: () => true
   })
 
-  const data = { key: 'hello' }
   const peer = { id: 'localhost:12345' }
 
-  instance.track(data, (err, expired, newPeer) => {
+  instance.track('hello', (err, newPeer) => {
     t.error(err, 'no error')
-    t.equal(expired, data, 'data is the same')
     t.equal(newPeer, peer, 'peer is set')
   })
 
   instance.check({
-    start: farmhash.hash32(data.key) - 1,
-    end: farmhash.hash32(data.key),
+    start: farmhash.hash32('hello') - 1,
+    end: farmhash.hash32('hello'),
     to: peer
   })
 })
@@ -34,16 +32,15 @@ test('do nothing if the element interval is before', (t) => {
     allocatedToMe: () => true
   })
 
-  const data = { key: 'hello' }
   const peer = { id: 'localhost:12345' }
 
-  instance.track(data, () => {
+  instance.track('hello', () => {
     t.fail('this should not be called')
   })
 
   instance.check({
-    start: farmhash.hash32(data.key) - 10,
-    end: farmhash.hash32(data.key) - 5,
+    start: farmhash.hash32('hello') - 10,
+    end: farmhash.hash32('hello') - 5,
     to: peer
   })
 
@@ -56,16 +53,15 @@ test('do nothing if the element interval is after', (t) => {
     allocatedToMe: () => true
   })
 
-  const data = { key: 'hello' }
   const peer = { id: 'localhost:12345' }
 
-  instance.track(data, () => {
+  instance.track('hello', () => {
     t.fail('this should not be called')
   })
 
   instance.check({
-    start: farmhash.hash32(data.key) + 10,
-    end: farmhash.hash32(data.key) + 20,
+    start: farmhash.hash32('hello') + 10,
+    end: farmhash.hash32('hello') + 20,
     to: peer
   })
 
@@ -80,9 +76,7 @@ test('errors if the key does not belong to the ring', (t) => {
     allocatedToMe: () => false
   })
 
-  const data = { key: 'hello' }
-
-  instance.track(data, (err, expired, newPeer) => {
+  instance.track('hello', (err, expired, newPeer) => {
     t.ok(err, 'error expected')
   })
 })
@@ -93,24 +87,22 @@ test('call a callback only once', (t) => {
     allocatedToMe: () => true
   })
 
-  const data = { key: 'hello' }
   const peer = { id: 'localhost:12345' }
 
-  instance.track(data, (err, expired, newPeer) => {
+  instance.track('hello', (err, newPeer) => {
     t.error(err, 'no error')
-    t.equal(expired, data, 'data is the same')
     t.equal(newPeer, peer, 'peer is set')
   })
 
   instance.check({
-    start: farmhash.hash32(data.key) - 1,
-    end: farmhash.hash32(data.key),
+    start: farmhash.hash32('hello') - 1,
+    end: farmhash.hash32('hello'),
     to: peer
   })
 
   instance.check({
-    start: farmhash.hash32(data.key) - 1,
-    end: farmhash.hash32(data.key),
+    start: farmhash.hash32('hello') - 1,
+    end: farmhash.hash32('hello'),
     to: peer
   })
 
@@ -118,56 +110,47 @@ test('call a callback only once', (t) => {
 })
 
 test('track two entities', (t) => {
-  t.plan(6)
+  t.plan(4)
 
   const instance = tracker({
     hash: farmhash.hash32,
     allocatedToMe: () => true
   })
 
-  const data1 = { key: 'hello' }
-  const data2 = { key: 'hello' }
   const peer = { id: 'localhost:12345' }
 
-  instance.track(data1, (err, expired, newPeer) => {
+  instance.track('hello', (err, newPeer) => {
     t.error(err, 'no error')
-    t.equal(expired, data1, 'data is the same')
     t.equal(newPeer, peer, 'peer is set')
   })
 
-  instance.track(data2, (err, expired, newPeer) => {
+  instance.track('hello', (err, newPeer) => {
     t.error(err, 'no error')
-    t.equal(expired, data2, 'data is the same')
     t.equal(newPeer, peer, 'peer is set')
   })
 
   instance.check({
-    start: farmhash.hash32(data1.key) - 1,
-    end: farmhash.hash32(data1.key),
+    start: farmhash.hash32('hello') - 1,
+    end: farmhash.hash32('hello'),
     to: peer
   })
 })
 
 test('clear()', (t) => {
-  t.plan(6)
+  t.plan(4)
 
   const instance = tracker({
     hash: farmhash.hash32,
     allocatedToMe: () => true
   })
 
-  const data1 = { key: 'hello' }
-  const data2 = { key: 'hello' }
-
-  instance.track(data1, (err, expired, newPeer) => {
+  instance.track('hello', (err, newPeer) => {
     t.error(err, 'no error')
-    t.equal(expired, data1, 'data is the same')
     t.notOk(newPeer, 'newPeer is null')
   })
 
-  instance.track(data2, (err, expired, newPeer) => {
+  instance.track('hello', (err, newPeer) => {
     t.error(err, 'no error')
-    t.equal(expired, data2, 'data is the same')
     t.notOk(newPeer, 'newPeer is null')
   })
 
