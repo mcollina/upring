@@ -95,6 +95,7 @@ run a base node. It also available as a tiny docker image.
   * <a href="#add"><code>instance.<b>add()</b></code></a>
   * <a href="#whoami"><code>instance.<b>whoami()</b></code></a>
   * <a href="#allocatedToMe"><code>instance.<b>allocatedToMe()</b></code></a>
+  * <a href="#track"><code>instance.<b>track()</b></code></a>
   * <a href="#logger"><code>instance.<b>logger</b></code></a>
   * <a href="#close"><code>instance.<b>close()</b></code></a>
 
@@ -251,6 +252,17 @@ The id of the current peer. It will throw if the node has not emitted
 ### instance.allocatedToMe(key)
 
 Returns `true` or `false` depending if the given key has been allocated to this node or not.
+
+<a name="track"></a>
+### instance.track(key, callback(err, newPeer))
+
+Track the given `key`: the given `callback` will be fired when the
+`key` exits from this peer responsibility.
+
+The callback will be called with a `newPeer` if the peers knows the
+target, with `null` otherwise, e.g. when `close` is called.
+
+Returns a `function` that can be used to remove the tracker.
 
 <a name="close"></a>
 ### instance.close(cb)

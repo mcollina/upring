@@ -10,6 +10,7 @@ const dezalgo = require('fastzalgo')
 const networkAddress = require('network-address')
 const bloomrun = require('bloomrun')
 const tinysonic = require('tinysonic')
+const tracker = require('./lib/tracker')
 const pino = require('pino')
 
 function UpRing (opts) {
@@ -73,6 +74,9 @@ function UpRing (opts) {
       port: this._server.address().port
     }
     this._hashring = hashring(hashringOpts)
+    this._tracker = tracker(this._hashring)
+    this.track = this._tracker.track
+
     // needed because of request retrials
     this._hashring.setMaxListeners(0)
     this._hashring.on('up', () => {
@@ -80,6 +84,8 @@ function UpRing (opts) {
       this.logger.info({ address: this._server.address() }, 'node up')
       this.emit('up')
     })
+
+    this._hashring.on('move', this._tracker.check)
     this._hashring.on('move', (info) => {
       this.logger.trace(info, 'move')
       this.emit('move', info)
@@ -246,6 +252,10 @@ UpRing.prototype.close = function (cb) {
 
   if (this.closed) {
     return cb()
+  }
+
+  if (this._tracker) {
+    this._tracker.clear()
   }
 
   this.closed = true
