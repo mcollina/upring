@@ -259,6 +259,8 @@ Track the given `key`: the given `callback` will be fired when the
 The callback will be called with a `newPeer` if the peers knows the
 target, with `null` otherwise, e.g. when `close` is called.
 
+Returns a `function` that can be used to remove the tracker.
+
 <a name="close"></a>
 ### instance.close(cb)
 

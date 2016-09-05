@@ -156,3 +156,26 @@ test('clear()', (t) => {
 
   instance.clear()
 })
+
+test('do nothing if the the untrack function is called', (t) => {
+  const instance = tracker({
+    hash: farmhash.hash32,
+    allocatedToMe: () => true
+  })
+
+  const peer = { id: 'localhost:12345' }
+
+  const untrack = instance.track('hello', () => {
+    t.fail('this should not be called')
+  })
+
+  untrack()
+
+  instance.check({
+    start: farmhash.hash32('hello') - 1,
+    end: farmhash.hash32('hello') + 1,
+    to: peer
+  })
+
+  t.end()
+})
