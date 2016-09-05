@@ -31,12 +31,14 @@
     "flush-write-stream": "^1.0.0",
     "pre-commit": "^1.1.2",
     "standard": "^8.0.0",
+    "farmhash": "^1.2.0",
     "tap": "^7.0.0"
   },
   "dependencies": {
     "bloomrun": "^2.1.3",
     "dezalgo": "^1.0.3",
     "end-of-stream": "^1.1.0",
+    "functional-red-black-tree": "^1.0.1",
     "network-address": "^1.1.0",
     "pump": "^1.0.1",
     "swim-hashring": "^0.4.0",
