@@ -23,8 +23,12 @@ boot(t, (one) => {
             break
           }
         }
+        if (start > onePoints[0]) {
+          break
+        }
       }
     }
+
     var key
     var hash
     i = 0
