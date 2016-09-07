@@ -40,7 +40,7 @@ boot(t, (one) => {
     })
 
     // let's join them in a cluster
-    one._hashring.swim.join([two.whoami()], function (err) {
+    one.join([two.whoami()], function (err) {
       t.error(err, 'no error')
     })
   })

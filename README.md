@@ -94,6 +94,7 @@ run a base node. It also available as a tiny docker image.
   * <a href="#peers"><code>instance.<b>peers()</b></code></a>
   * <a href="#add"><code>instance.<b>add()</b></code></a>
   * <a href="#whoami"><code>instance.<b>whoami()</b></code></a>
+  * <a href="#join"><code>instance.<b>join()</b></code></a>
   * <a href="#allocatedToMe"><code>instance.<b>allocatedToMe()</b></code></a>
   * <a href="#track"><code>instance.<b>track()</b></code></a>
   * <a href="#logger"><code>instance.<b>logger</b></code></a>
@@ -129,6 +130,8 @@ event.
 * `request`: when a request comes in to be handled by the current
   node, if the router is not configured. It has the request object as first argument, a function to call
 when finished as second argument:
+* `'peerUp'`: when a peer that is part of the hashring gets online
+* `'peerDown'`: when a peer that is part of the hashring gets offline
 
 ```js
 instance.on('request', (req, reply) => {
@@ -175,15 +178,20 @@ will be sent to the next peer in the ring. This does not applies to
 streams, which will be closed or errored.
 
 <a name="peers"></a>
-### instance.peers()
+### instance.peers([myself])
 
-All the other peers, as computed by [swim-hashring](http://github.com/mcollina/swim-hashring).
+All the other peers, as computed by [swim-hashring](http://github.com/mcollina/swim-hashring). If `myself` is set to `true`, then we get data of the current peer as well.
 
 Example:
 
 ```js
 console.log(instance.peers().map((peer) => peer.id))
 ```
+
+<a name="mymeta"></a>
+### instance.mymeta()
+
+Returns the information regarding this peer.
 
 <a name="peerConn"></a>
 ### instance.peerConn(peer)
@@ -247,6 +255,13 @@ instance.add('parse', (req, reply) => {
 
 The id of the current peer. It will throw if the node has not emitted
 `'up'` yet.
+
+<a name="join"></a>
+### instance.join(peers, cb)
+
+Make the instance join the set of peers id (the result of
+[`whomai()`](#whoami)). The `cb` callback is called after join the join
+is completed.
 
 <a name="allocatedToMe"></a>
 ### instance.allocatedToMe(key)

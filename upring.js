@@ -95,6 +95,8 @@ function UpRing (opts) {
       this.emit('steal', info)
     })
     this._hashring.on('error', this.emit.bind(this, 'error'))
+    this._hashring.on('peerUp', this.emit.bind(this, 'peerUp'))
+    this._hashring.on('peerDown', this.emit.bind(this, 'peerDown'))
   })
 
   this._server.on('error', this.emit.bind(this, 'error'))
@@ -106,6 +108,13 @@ inherits(UpRing, EE)
 
 UpRing.prototype.whoami = function () {
   return this._hashring.whoami()
+}
+
+UpRing.prototype.join = function (peers, cb) {
+  if (!Array.isArray(peers)) {
+    peers = [peers]
+  }
+  return this._hashring.swim.join(peers, cb)
 }
 
 UpRing.prototype.allocatedToMe = function (key) {
@@ -181,8 +190,12 @@ function setupConn (that, peer, stream, retry) {
   return conn
 }
 
-UpRing.prototype.peers = function () {
-  return this._hashring.peers()
+UpRing.prototype.peers = function (myself) {
+  return this._hashring.peers(myself)
+}
+
+UpRing.prototype.mymeta = function () {
+  return this._hashring.mymeta()
 }
 
 UpRing.prototype.request = function (obj, callback, _count) {
