@@ -23,8 +23,12 @@ boot(t, (one) => {
             break
           }
         }
+        if (start > onePoints[0]) {
+          break
+        }
       }
     }
+
     var key
     var hash
     i = 0
@@ -40,7 +44,7 @@ boot(t, (one) => {
     })
 
     // let's join them in a cluster
-    one._hashring.swim.join([two.whoami()], function (err) {
+    one.join([two.whoami()], function (err) {
       t.error(err, 'no error')
     })
   })

@@ -167,7 +167,7 @@ test('request to node 2', { timeout: 5000 }, (t) => {
 
   bootTwo(t, (i1, i2) => {
     t.equal(i1.peers().length, 1, 'there is only one other peer')
-    t.equal(i1.peers()[0].id, i2.id, 'the other peer is i2')
+    t.equal(i1.peers()[0].id, i2.mymeta().id, 'the other peer is i2')
 
     i1.on('request', (req, reply) => {
       t.fail('no request should happen to i1')
