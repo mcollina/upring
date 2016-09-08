@@ -51,6 +51,7 @@ function UpRing (opts) {
 
   this._server = net.createServer((stream) => {
     if (this.closed) {
+      stream.on('error', noop)
       stream.destroy()
       return
     }
