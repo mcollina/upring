@@ -39,7 +39,7 @@ boot(t, (one) => {
 
     // now key will be allocated between the two
     // let's track it
-    one.track(key, function () {
+    one.track(key).on('moved', function () {
       t.pass('moved')
     })
 

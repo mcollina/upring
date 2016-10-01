@@ -5,7 +5,7 @@ const tracker = require('../lib/tracker')
 const farmhash = require('farmhash')
 
 test('track a value on the ring', (t) => {
-  t.plan(2)
+  t.plan(1)
 
   const instance = tracker({
     hash: farmhash.hash32,
@@ -14,8 +14,8 @@ test('track a value on the ring', (t) => {
 
   const peer = { id: 'localhost:12345' }
 
-  instance.track('hello', (err, newPeer) => {
-    t.error(err, 'no error')
+  const track = instance.track('hello')
+  track.on('moved', (newPeer) => {
     t.equal(newPeer, peer, 'peer is set')
   })
 
@@ -34,7 +34,7 @@ test('do nothing if the element interval is before', (t) => {
 
   const peer = { id: 'localhost:12345' }
 
-  instance.track('hello', () => {
+  instance.track('hello').on('moved', () => {
     t.fail('this should not be called')
   })
 
@@ -55,7 +55,7 @@ test('do nothing if the element interval is after', (t) => {
 
   const peer = { id: 'localhost:12345' }
 
-  instance.track('hello', () => {
+  instance.track('hello').on('moved', () => {
     t.fail('this should not be called')
   })
 
@@ -76,9 +76,12 @@ test('errors if the key does not belong to the ring', (t) => {
     allocatedToMe: () => false
   })
 
-  instance.track('hello', (err, expired, newPeer) => {
+  try {
+    instance.track('hello')
+    t.fail('no error')
+  } catch (err) {
     t.ok(err, 'error expected')
-  })
+  }
 })
 
 test('call a callback only once', (t) => {
@@ -89,8 +92,7 @@ test('call a callback only once', (t) => {
 
   const peer = { id: 'localhost:12345' }
 
-  instance.track('hello', (err, newPeer) => {
-    t.error(err, 'no error')
+  instance.track('hello').on('moved', (newPeer) => {
     t.equal(newPeer, peer, 'peer is set')
   })
 
@@ -110,7 +112,7 @@ test('call a callback only once', (t) => {
 })
 
 test('track two entities', (t) => {
-  t.plan(4)
+  t.plan(2)
 
   const instance = tracker({
     hash: farmhash.hash32,
@@ -119,13 +121,11 @@ test('track two entities', (t) => {
 
   const peer = { id: 'localhost:12345' }
 
-  instance.track('hello', (err, newPeer) => {
-    t.error(err, 'no error')
+  instance.track('hello').on('moved', (newPeer) => {
     t.equal(newPeer, peer, 'peer is set')
   })
 
-  instance.track('hello', (err, newPeer) => {
-    t.error(err, 'no error')
+  instance.track('hello').on('moved', (newPeer) => {
     t.equal(newPeer, peer, 'peer is set')
   })
 
@@ -137,27 +137,25 @@ test('track two entities', (t) => {
 })
 
 test('clear()', (t) => {
-  t.plan(4)
+  t.plan(2)
 
   const instance = tracker({
     hash: farmhash.hash32,
     allocatedToMe: () => true
   })
 
-  instance.track('hello', (err, newPeer) => {
-    t.error(err, 'no error')
+  instance.track('hello').on('moved', (newPeer) => {
     t.notOk(newPeer, 'newPeer is null')
   })
 
-  instance.track('hello', (err, newPeer) => {
-    t.error(err, 'no error')
+  instance.track('hello').on('moved', (newPeer) => {
     t.notOk(newPeer, 'newPeer is null')
   })
 
   instance.clear()
 })
 
-test('do nothing if the the untrack function is called', (t) => {
+test('do nothing if the the tracker.end function is called', (t) => {
   const instance = tracker({
     hash: farmhash.hash32,
     allocatedToMe: () => true
@@ -165,11 +163,11 @@ test('do nothing if the the untrack function is called', (t) => {
 
   const peer = { id: 'localhost:12345' }
 
-  const untrack = instance.track('hello', () => {
+  const track = instance.track('hello').on('moved', () => {
     t.fail('this should not be called')
   })
 
-  untrack()
+  track.end()
 
   instance.check({
     start: farmhash.hash32('hello') - 1,

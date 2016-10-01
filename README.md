@@ -269,15 +269,17 @@ is completed.
 Returns `true` or `false` depending if the given key has been allocated to this node or not.
 
 <a name="track"></a>
-### instance.track(key, callback(err, newPeer))
+### instance.track(key)
 
-Track the given `key`: the given `callback` will be fired when the
+Create a new tracker for the given `key`.
+
+It will emit `'moved'` when the
 `key` exits from this peer responsibility.
 
-The callback will be called with a `newPeer` if the peers knows the
+The `'moved'` event will be called with a `newPeer` if the peers knows the
 target, with `null` otherwise, e.g. when `close` is called.
 
-Returns a `function` that can be used to remove the tracker.
+The tracker has an `end` method to quit tracking.
 
 <a name="close"></a>
 ### instance.close(cb)
