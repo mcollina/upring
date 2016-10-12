@@ -4,7 +4,7 @@ const t = require('tap')
 const boot = require('./helper').boot
 const farmhash = require('farmhash')
 
-t.plan(2)
+t.plan(4)
 
 // boot two unrelated instance
 boot(t, (one) => {
@@ -39,13 +39,18 @@ boot(t, (one) => {
 
     // now key will be allocated between the two
     // let's track it
-    one.track(key)
-      .on('moved', function () {
-        t.pass('moved')
+    one.track(key, { replica: true })
+      .on('moved', function (newPeer) {
+        t.equal(two.whoami(), newPeer.id, 'destination id matches')
       })
       .on('replica', function () {
-        t.fail('no replica events')
+        t.fail('no replica')
       })
+
+    two.track(key, { replica: true }).on('replica', function (newPeer, oldPeer) {
+      t.equal(one.whoami(), newPeer.id, 'replica id matches')
+      t.notOk(oldPeer, 'no older replica')
+    })
 
     // let's join them in a cluster
     one.join([two.whoami()], function (err) {
