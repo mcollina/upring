@@ -179,7 +179,7 @@ test('do nothing if the the tracker.end function is called', (t) => {
 })
 
 test('track the replica of a value across the ring', (t) => {
-  t.plan(6)
+  t.plan(10)
 
   const hash = farmhash.hash32('hello')
   const hashring = {
@@ -203,6 +203,13 @@ test('track the replica of a value across the ring', (t) => {
       hash + 100
     ]
   }
+  const peer2 = {
+    id: 'b',
+    points: [ // mocked points
+      hash + 55,
+      hash + 200
+    ]
+  }
 
   hashring.next = function (key) {
     // first go, there is no other peer
@@ -213,7 +220,14 @@ test('track the replica of a value across the ring', (t) => {
       t.equal(key, hash)
 
       hashring.next = function () {
-        t.fail('next should not be called again')
+        // third go, there is a next peer
+        t.equal(key, hash)
+
+        hashring.next = function () {
+          t.fail('next should not be called again')
+        }
+
+        return peer2
       }
 
       return peer
@@ -228,9 +242,24 @@ test('track the replica of a value across the ring', (t) => {
   }
 
   const track = instance.track('hello', { replica: true })
-  track.on('changeReplica', (newPeer, oldPeer) => {
+  track.once('changeReplica', (newPeer, oldPeer) => {
     t.equal(newPeer, peer, 'peer is set')
     t.notOk(oldPeer, 'no old peer')
+
+    track.once('changeReplica', (newPeer2, oldPeer2) => {
+      t.equal(oldPeer2, newPeer, 'peer is set')
+      t.equal(newPeer2, peer2)
+
+      track.once('changeReplica', () => {
+        t.fail('no more changeReplica')
+      })
+    })
+
+    instance.check({
+      start: myself.points[1],
+      end: peer2.points[0],
+      to: peer2
+    })
   })
 
   instance.check({
