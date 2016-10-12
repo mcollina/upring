@@ -242,16 +242,16 @@ test('track the replica of a value across the ring', (t) => {
   }
 
   const track = instance.track('hello', { replica: true })
-  track.once('changeReplica', (newPeer, oldPeer) => {
+  track.once('replica', (newPeer, oldPeer) => {
     t.equal(newPeer, peer, 'peer is set')
     t.notOk(oldPeer, 'no old peer')
 
-    track.once('changeReplica', (newPeer2, oldPeer2) => {
+    track.once('replica', (newPeer2, oldPeer2) => {
       t.equal(oldPeer2, newPeer, 'peer is set')
       t.equal(newPeer2, peer2)
 
-      track.once('changeReplica', () => {
-        t.fail('no more changeReplica')
+      track.once('replica', () => {
+        t.fail('no more replica')
       })
     })
 
