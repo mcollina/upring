@@ -40,7 +40,7 @@ boot(t, (one) => {
     // now key will be allocated between the two
     // let's track it
     one.track(key, { replica: true })
-      .on('moved', function (newPeer) {
+      .on('move', function (newPeer) {
         t.equal(two.whoami(), newPeer.id, 'destination id matches')
       })
       .on('replica', function () {

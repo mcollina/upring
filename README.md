@@ -280,8 +280,8 @@ Options:
 
 Events:
 
-* `'moved'`, when the `key` exits from this peer responsibility.
-  The `'moved'` event will be called with a `newPeer` if the peers knows the
+* `'move'`, when the `key` exits from this peer responsibility.
+  The `'move'` event will be called with a `newPeer` if the peers knows the
   target, with `null` otherwise, e.g. when `close` is called.
 * `'replica'`, adds or replace the replica of the given key. The first
   argument is the destination peer, while the second is the old replica

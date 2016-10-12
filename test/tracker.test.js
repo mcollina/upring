@@ -15,7 +15,7 @@ test('track a value on the ring', (t) => {
   const peer = { id: 'localhost:12345' }
 
   const track = instance.track('hello')
-  track.on('moved', (newPeer) => {
+  track.on('move', (newPeer) => {
     t.equal(newPeer, peer, 'peer is set')
   })
 
@@ -34,7 +34,7 @@ test('do nothing if the element interval is before', (t) => {
 
   const peer = { id: 'localhost:12345' }
 
-  instance.track('hello').on('moved', () => {
+  instance.track('hello').on('move', () => {
     t.fail('this should not be called')
   })
 
@@ -55,7 +55,7 @@ test('do nothing if the element interval is after', (t) => {
 
   const peer = { id: 'localhost:12345' }
 
-  instance.track('hello').on('moved', () => {
+  instance.track('hello').on('move', () => {
     t.fail('this should not be called')
   })
 
@@ -92,7 +92,7 @@ test('call a callback only once', (t) => {
 
   const peer = { id: 'localhost:12345' }
 
-  instance.track('hello').on('moved', (newPeer) => {
+  instance.track('hello').on('move', (newPeer) => {
     t.equal(newPeer, peer, 'peer is set')
   })
 
@@ -121,11 +121,11 @@ test('track two entities', (t) => {
 
   const peer = { id: 'localhost:12345' }
 
-  instance.track('hello').on('moved', (newPeer) => {
+  instance.track('hello').on('move', (newPeer) => {
     t.equal(newPeer, peer, 'peer is set')
   })
 
-  instance.track('hello').on('moved', (newPeer) => {
+  instance.track('hello').on('move', (newPeer) => {
     t.equal(newPeer, peer, 'peer is set')
   })
 
@@ -144,11 +144,11 @@ test('clear()', (t) => {
     allocatedToMe: () => true
   })
 
-  instance.track('hello').on('moved', (newPeer) => {
+  instance.track('hello').on('move', (newPeer) => {
     t.notOk(newPeer, 'newPeer is null')
   })
 
-  instance.track('hello').on('moved', (newPeer) => {
+  instance.track('hello').on('move', (newPeer) => {
     t.notOk(newPeer, 'newPeer is null')
   })
 
@@ -163,7 +163,7 @@ test('do nothing if the the tracker.end function is called', (t) => {
 
   const peer = { id: 'localhost:12345' }
 
-  const track = instance.track('hello').on('moved', () => {
+  const track = instance.track('hello').on('move', () => {
     t.fail('this should not be called')
   })
 

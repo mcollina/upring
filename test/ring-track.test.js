@@ -40,8 +40,8 @@ boot(t, (one) => {
     // now key will be allocated between the two
     // let's track it
     one.track(key)
-      .on('moved', function () {
-        t.pass('moved')
+      .on('move', function () {
+        t.pass('move')
       })
       .on('replica', function () {
         t.fail('no replica events')
