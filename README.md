@@ -269,15 +269,27 @@ is completed.
 Returns `true` or `false` depending if the given key has been allocated to this node or not.
 
 <a name="track"></a>
-### instance.track(key, callback(err, newPeer))
+### instance.track(key[, opts])
 
-Track the given `key`: the given `callback` will be fired when the
-`key` exits from this peer responsibility.
+Create a new tracker for the given `key`.
 
-The callback will be called with a `newPeer` if the peers knows the
-target, with `null` otherwise, e.g. when `close` is called.
+Options:
 
-Returns a `function` that can be used to remove the tracker.
+* `replica`, turns on tracking of a replica of the given data. Default:
+  `false`.
+
+Events:
+
+* `'move'`, when the `key` exits from this peer responsibility.
+  The `'move'` event will be called with a `newPeer` if the peers knows the
+  target, with `null` otherwise, e.g. when `close` is called.
+* `'replica'`, adds or replace the replica of the given key. The first
+  argument is the destination peer, while the second is the old replica
+  peer (if any).
+
+Methods:
+
+* `end()`, quit tracking.
 
 <a name="close"></a>
 ### instance.close(cb)
