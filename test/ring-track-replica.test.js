@@ -40,17 +40,18 @@ boot(t, (one) => {
     // now key will be allocated between the two
     // let's track it
     one.track(key, { replica: true })
-      .on('move', function (newPeer) {
+      .once('move', function (newPeer) {
         t.equal(two.whoami(), newPeer.id, 'destination id matches')
       })
       .on('replica', function () {
-        t.fail('no replica')
+        t.fail('no replica event')
       })
 
-    two.track(key, { replica: true }).on('replica', function (newPeer, oldPeer) {
-      t.equal(one.whoami(), newPeer.id, 'replica id matches')
-      t.notOk(oldPeer, 'no older replica')
-    })
+    two.track(key, { replica: true })
+      .on('replica', function (newPeer, oldPeer) {
+        t.equal(one.whoami(), newPeer.id, 'replica id matches')
+        t.notOk(oldPeer, 'no older replica')
+      })
 
     // let's join them in a cluster
     one.join([two.whoami()], function (err) {

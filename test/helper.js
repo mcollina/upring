@@ -19,6 +19,7 @@ function opts (opts) {
   opts = opts || {}
   opts.hashring = opts.hashring || {}
   opts.hashring.joinTimeout = 200
+  opts.hashring.replicaPoints = 10
   return opts
 }
 

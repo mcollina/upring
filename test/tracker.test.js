@@ -3,13 +3,16 @@
 const test = require('tap').test
 const tracker = require('../lib/tracker')
 const farmhash = require('farmhash')
+const EE = require('events').EventEmitter
 
 test('track a value on the ring', (t) => {
   t.plan(1)
 
   const instance = tracker({
     hash: farmhash.hash32,
-    allocatedToMe: () => true
+    allocatedToMe: () => true,
+    whoami: () => 'abcde',
+    on: () => {}
   })
 
   const peer = { id: 'localhost:12345' }
@@ -29,7 +32,9 @@ test('track a value on the ring', (t) => {
 test('do nothing if the element interval is before', (t) => {
   const instance = tracker({
     hash: farmhash.hash32,
-    allocatedToMe: () => true
+    allocatedToMe: () => true,
+    whoami: () => 'abcde',
+    on: () => {}
   })
 
   const peer = { id: 'localhost:12345' }
@@ -50,7 +55,9 @@ test('do nothing if the element interval is before', (t) => {
 test('do nothing if the element interval is after', (t) => {
   const instance = tracker({
     hash: farmhash.hash32,
-    allocatedToMe: () => true
+    allocatedToMe: () => true,
+    whoami: () => 'abcde',
+    on: () => {}
   })
 
   const peer = { id: 'localhost:12345' }
@@ -73,7 +80,9 @@ test('errors if the key does not belong to the ring', (t) => {
 
   const instance = tracker({
     hash: farmhash.hash32,
-    allocatedToMe: () => false
+    allocatedToMe: () => false,
+    whoami: () => 'abcde',
+    on: () => {}
   })
 
   try {
@@ -87,7 +96,9 @@ test('errors if the key does not belong to the ring', (t) => {
 test('call a callback only once', (t) => {
   const instance = tracker({
     hash: farmhash.hash32,
-    allocatedToMe: () => true
+    allocatedToMe: () => true,
+    whoami: () => 'abcde',
+    on: () => {}
   })
 
   const peer = { id: 'localhost:12345' }
@@ -116,7 +127,9 @@ test('track two entities', (t) => {
 
   const instance = tracker({
     hash: farmhash.hash32,
-    allocatedToMe: () => true
+    allocatedToMe: () => true,
+    whoami: () => 'abcde',
+    on: () => {}
   })
 
   const peer = { id: 'localhost:12345' }
@@ -141,7 +154,9 @@ test('clear()', (t) => {
 
   const instance = tracker({
     hash: farmhash.hash32,
-    allocatedToMe: () => true
+    allocatedToMe: () => true,
+    whoami: () => 'abcde',
+    on: () => {}
   })
 
   instance.track('hello').on('move', (newPeer) => {
@@ -158,7 +173,9 @@ test('clear()', (t) => {
 test('do nothing if the the tracker.end function is called', (t) => {
   const instance = tracker({
     hash: farmhash.hash32,
-    allocatedToMe: () => true
+    allocatedToMe: () => true,
+    whoami: () => 'abcde',
+    on: () => {}
   })
 
   const peer = { id: 'localhost:12345' }
@@ -179,13 +196,14 @@ test('do nothing if the the tracker.end function is called', (t) => {
 })
 
 test('track the replica of a value across the ring', (t) => {
-  t.plan(10)
+  t.plan(8)
 
   const hash = farmhash.hash32('hello')
-  const hashring = {
-    hash: farmhash.hash32,
-    allocatedToMe: () => true
-  }
+  const hashring = new EE()
+
+  hashring.hash = farmhash.hash32
+  hashring.allocatedToMe = () => true
+  hashring.whoami = () => 'abcde'
 
   const instance = tracker(hashring)
 
@@ -212,28 +230,21 @@ test('track the replica of a value across the ring', (t) => {
   }
 
   hashring.next = function (key) {
-    // first go, there is no other peer
+    // first go, there is a next peer
     t.equal(key, hash)
 
-    hashring.next = function () {
+    hashring.next = function (key) {
       // second go, there is a next peer
       t.equal(key, hash)
 
       hashring.next = function () {
-        // third go, there is a next peer
-        t.equal(key, hash)
-
-        hashring.next = function () {
-          t.fail('next should not be called again')
-        }
-
-        return peer2
+        t.fail('next should not be called again')
       }
 
-      return peer
+      return peer2
     }
 
-    return null
+    return peer
   }
 
   hashring.lookup = function (key) {
@@ -255,12 +266,16 @@ test('track the replica of a value across the ring', (t) => {
       })
     })
 
+    hashring.emit('peerUp', peer2)
+
     instance.check({
       start: myself.points[1],
       end: peer2.points[0],
       to: peer2
     })
   })
+
+  hashring.emit('peerUp', peer)
 
   instance.check({
     start: myself.points[1],
