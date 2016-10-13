@@ -34,6 +34,7 @@
     "farmhash": "^1.2.0",
     "flush-write-stream": "^1.0.0",
     "pre-commit": "^1.1.2",
+    "snazzy": "^5.0.0",
     "standard": "^8.0.0",
     "tap": "^7.0.0"
   },
