@@ -4,6 +4,7 @@
 
 [![npm version][npm-badge]][npm-url]
 [![Build Status][travis-badge]][travis-url]
+[![Coverage Status][coveralls-badge]][coveralls-url]
 
 **UpRing** provides application-level sharding, based on node.js streams. UpRing allocates some resources to a node, based on the hash of a `key`, and allows you to query the node using a request response pattern (based on JS objects) which can embed streams.
 
@@ -311,3 +312,5 @@ MIT
 [travis-badge]: https://api.travis-ci.org/mcollina/upring.svg
 [travis-url]: https://travis-ci.org/mcollina/upring
 [pino]: https://github.com/mcollina/pino
+[coveralls-badge]: https://coveralls.io/repos/github/mcollina/upring/badge.svg?branch=master
+[coveralls-url]: https://coveralls.io/github/mcollina/upring?branch=master

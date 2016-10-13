@@ -4,7 +4,9 @@
   "description": "application-level sharding on node.js streams",
   "main": "upring.js",
   "scripts": {
-    "test": "standard && tap test/*.test.js"
+    "test": "standard | snazzy && tap test/*.test.js",
+    "coverage": "tap --cov --coverage-report=html test/*.test.js",
+    "coveralls": "tap test/**/*Test.js --cov --coverage-report=text-lcov | coveralls"
   },
   "precommit": "test",
   "repository": {
@@ -28,10 +30,11 @@
   "homepage": "https://github.com/mcollina/upring#readme",
   "devDependencies": {
     "concat-stream": "^1.5.1",
+    "coveralls": "^2.11.14",
+    "farmhash": "^1.2.0",
     "flush-write-stream": "^1.0.0",
     "pre-commit": "^1.1.2",
     "standard": "^8.0.0",
-    "farmhash": "^1.2.0",
     "tap": "^7.0.0"
   },
   "dependencies": {

@@ -10,3 +10,5 @@ addons:
       - ubuntu-toolchain-r-test
     packages:
       - g++-4.8
+after_script:
+  - npm run coveralls
