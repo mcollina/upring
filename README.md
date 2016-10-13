@@ -302,6 +302,10 @@ Close the current instance
 
 A [pino][pino] instance to log stuff to.
 
+## Acknowledgements
+
+This project is kindly sponsored by [nearForm](http://nearform.com).
+
 ## License
 
 MIT
