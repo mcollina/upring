@@ -1,6 +1,6 @@
 {
   "name": "upring",
-  "version": "0.10.1",
+  "version": "0.11.0",
   "description": "application-level sharding on node.js streams",
   "main": "upring.js",
   "scripts": {
