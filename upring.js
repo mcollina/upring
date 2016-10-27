@@ -9,9 +9,10 @@ const pump = require('pump')
 const dezalgo = require('fastzalgo')
 const networkAddress = require('network-address')
 const bloomrun = require('bloomrun')
+const pino = require('pino')
 const tinysonic = require('tinysonic')
 const tracker = require('./lib/tracker')
-const pino = require('pino')
+const serializers = require('./lib/serializers')
 
 function UpRing (opts) {
   if (!(this instanceof UpRing)) {
@@ -29,7 +30,7 @@ function UpRing (opts) {
   hashringOpts.host = opts.host
 
   this._inbound = new Set()
-  this.logger = opts.logger || pino()
+  this.logger = opts.logger ? opts.logger.child({ serializers }) : pino({ serializers })
 
   if (!opts.logger) {
     this.logger.level = opts.logLevel || 'info'
