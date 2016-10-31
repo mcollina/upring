@@ -13,6 +13,7 @@ const pino = require('pino')
 const tinysonic = require('tinysonic')
 const tracker = require('./lib/tracker')
 const serializers = require('./lib/serializers')
+const monitoring = require('./lib/monitoring')
 
 function UpRing (opts) {
   if (!(this instanceof UpRing)) {
@@ -31,6 +32,7 @@ function UpRing (opts) {
 
   this._inbound = new Set()
   this.logger = opts.logger ? opts.logger.child({ serializers }) : pino({ serializers })
+  this.info = {}
 
   if (!opts.logger) {
     this.logger.level = opts.logLevel || 'info'
@@ -38,6 +40,7 @@ function UpRing (opts) {
 
   this._dispatch = (req, reply) => {
     var func
+    this.emit('prerequest', req)
     if (this._router) {
       func = this._router.lookup(req)
       if (func) {
@@ -247,6 +250,7 @@ UpRing.prototype.request = function (obj, callback, _count) {
 UpRing.prototype.add = function (pattern, func) {
   if (!this._router) {
     this._router = bloomrun()
+    monitoring(this)
   }
 
   if (typeof pattern === 'string') {
@@ -285,6 +289,7 @@ UpRing.prototype.close = function (cb) {
   this._hashring.close()
   this._server.close((err) => {
     this.logger.info('closed')
+    this.emit('close')
     cb(err)
   })
 
