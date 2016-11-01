@@ -331,7 +331,7 @@ const conn = upring.peerConn({ id: '127.0.0.1:7979' })
 
 conn.request({
   ns: 'monitoring',
-  cmd: 'memoryUsage
+  cmd: 'memoryUsage'
 }, console.log)
 ```
 
