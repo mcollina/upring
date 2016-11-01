@@ -10,6 +10,13 @@
 
 **UpRing** simplifies the implementation and deployment of a cluster of nodes using a gossip membership protocol and a consistent hasrhing (see [swim-hashring](https://github.com/mcollina/swim-hashring)). It uses [tentacoli](https://github.com/mcollina/tentacoli) as a transport layer.
 
+* [Installation](#install)
+* [Example](#example)
+* [API](#api)
+* [Monitoring](#monitoring)
+* [Acknowledgements](#acknowledgements)
+* [License](#license)
+
 ## Install
 
 ```
@@ -98,6 +105,7 @@ run a base node. It also available as a tiny docker image.
   * <a href="#join"><code>instance.<b>join()</b></code></a>
   * <a href="#allocatedToMe"><code>instance.<b>allocatedToMe()</b></code></a>
   * <a href="#track"><code>instance.<b>track()</b></code></a>
+  * <a href="#info"><code>instance.<b>info</b></code></a>
   * <a href="#logger"><code>instance.<b>logger</b></code></a>
   * <a href="#close"><code>instance.<b>close()</b></code></a>
 
@@ -301,6 +309,92 @@ Close the current instance
 ### instance.logger
 
 A [pino][pino] instance to log stuff to.
+
+<a name="info"></a>
+### instance.info
+
+An Object that can be used for publishing custom information through the
+stock monitoring commands.
+
+<a name="monitoring"></a>
+## Monitoring
+
+If [`upring.add()`][#add] is used, some standard pattern are also added
+to __UpRing__ to ease monitoring the instance.
+
+Given an `upring` instance, those commands are easily accessible by
+sending a direct message through the [tentacoli][tentacoli]
+connection.
+
+```js
+const conn = upring.peerConn({ id: '127.0.0.1:7979' })
+
+conn.request({
+  ns: 'monitoring',
+  cmd: 'memoryUsage'
+}, console.log)
+```
+
+### ns:monitoring,cmd:memoryUsage
+
+Returns the amount of memory currently used by the peer.
+
+```js
+const conn = upring.peerConn({ id: '127.0.0.1:7979' })
+
+conn.request({
+  ns: 'monitoring',
+  cmd: 'memoryUsage'
+}, console.log)
+
+// the response will be in the format
+// { rss: 42639360, heapTotal: 23105536, heapUsed: 16028496 }
+```
+
+### ns:monitoring,cmd:info
+
+Return some informations about the peer.
+
+```js
+const conn = upring.peerConn({ id: '127.0.0.1:7979' })
+
+conn.request({
+  ns: 'monitoring',
+  cmd: 'info'
+}, console.log)
+
+// the response will be in the format
+// { id: '192.168.1.185:55673',
+//   upring: { address: '192.168.1.185', port: 50758 } }
+```
+
+Custom information can be added in [`upring.info`](#info), and it will
+be added to this respsonse.
+
+### ns:monitoring,cmd:trace
+
+Returns a stream of sampled key/hash pairs.
+
+```js
+const conn = upring.peerConn({ id: '127.0.0.1:7979' })
+
+conn.request({
+  ns: 'monitoring',
+  cmd: 'trace'
+}, function (err, res) {
+  if (err) {
+    // do something!
+  }
+
+  res.stream.trace.on('data', console.log)
+  // this will be in the format
+  // { id: '192.168.1.185:55673',
+  //   keys:
+  //    [ { key: 'world', hash: 831779723 },
+  //      { key: 'hello', hash: 2535641019 } ] }
+})
+```
+
 
 ## Acknowledgements
 
