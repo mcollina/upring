@@ -5,7 +5,7 @@ const tracker = require('../lib/tracker')
 const farmhash = require('farmhash')
 const EE = require('events').EventEmitter
 
-test('track a value on the ring', (t) => {
+test('track a key on the ring', (t) => {
   t.plan(1)
 
   const instance = tracker({
@@ -282,4 +282,24 @@ test('track the replica of a value across the ring', (t) => {
     end: peer.points[0],
     to: peer
   })
+})
+
+test('track throws if not allocated to the current peer', (t) => {
+  t.plan(1)
+
+  const instance = tracker({
+    hash: farmhash.hash32,
+    allocatedToMe: () => false,
+    whoami: () => 'abcde',
+    on: () => {}
+  })
+
+  try {
+    instance.track('hello')
+  } catch (err) {
+    t.ok(err)
+    return
+  }
+
+  t.fail('not thrown')
 })

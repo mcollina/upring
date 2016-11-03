@@ -4,7 +4,7 @@ const t = require('tap')
 const boot = require('./helper').boot
 const farmhash = require('farmhash')
 
-t.plan(4)
+t.plan(6)
 
 // boot two unrelated instance
 boot(t, (one) => {
@@ -56,6 +56,15 @@ boot(t, (one) => {
     // let's join them in a cluster
     one.join([two.whoami()], function (err) {
       t.error(err, 'no error')
+
+      one.replica(key, function () {
+        // now one is responsible for this key
+        t.pass('one owns key')
+      })
+
+      two.close(function () {
+        t.pass('two closed')
+      })
     })
   })
 })

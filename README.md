@@ -300,6 +300,12 @@ Methods:
 
 * `end()`, quit tracking.
 
+<a name="replica"></a>
+### instance.replica(key, cb)
+
+Flag this upring instance as replicating the given key.
+`cb` is fired once, after the instance becames responsible for the key.
+
 <a name="close"></a>
 ### instance.close(cb)
 

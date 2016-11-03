@@ -12,6 +12,7 @@ const bloomrun = require('bloomrun')
 const pino = require('pino')
 const tinysonic = require('tinysonic')
 const tracker = require('./lib/tracker')
+const replicator = require('./lib/replicator')
 const serializers = require('./lib/serializers')
 const monitoring = require('./lib/monitoring')
 
@@ -80,7 +81,9 @@ function UpRing (opts) {
     }
     this._hashring = hashring(hashringOpts)
     this._tracker = tracker(this._hashring)
+    this._replicator = replicator(this._hashring)
     this.track = this._tracker.track
+    this.replica = this._replicator.replica
 
     // needed because of request retrials
     this._hashring.setMaxListeners(0)
@@ -95,6 +98,7 @@ function UpRing (opts) {
       this.logger.trace(info, 'move')
       this.emit('move', info)
     })
+    this._hashring.on('steal', this._replicator.check)
     this._hashring.on('steal', (info) => {
       this.logger.trace(info, 'steal')
       this.emit('steal', info)
