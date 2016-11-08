@@ -11,7 +11,7 @@
 **UpRing** simplifies the implementation and deployment of a cluster of nodes using a gossip membership protocol and a [consistent hashing](https://en.wikipedia.org/wiki/Consistent_hashing) scheme (see [swim-hashring](https://github.com/mcollina/swim-hashring)). It uses [tentacoli](https://github.com/mcollina/tentacoli) as a transport layer.
 
 * [Installation](#install)
-* [Example](#example)
+* [Examples](#examples)
 * [API](#api)
 * [Monitoring](#monitoring)
 * [Acknowledgements](#acknowledgements)
@@ -23,72 +23,17 @@
 npm i upring
 ```
 
-## Example
+## Examples
 
-Here is an example client:
+Check out:
 
-```js
-'use strict'
-
-const upring = require('upring')
-const client = upring({
-  client: true, // this does not provides services to the ring
-
-  // fill in with your base node, it maches the one for local usage
-  base: [process.argv[2]]
-})
-
-client.on('up', () => {
-  client.request({
-    // the same key will always go to the same host
-    // if it is online or until new servers come online
-    key: 'a key',
-    cmd: 'read'
-  }, (err, response) => {
-    if (err) {
-      console.log(err.message)
-      return
-    }
-    response.streams.out.pipe(process.stdout)
-    response.streams.out.on('end', () => {
-      process.exit(0)
-    })
-  })
-})
-```
-
-And here is an example server, acting as a base node:
-
-```js
-'use strict'
-
-const upring = require('upring')
-const server = upring({
-  hashring: {
-    port: 7799
-  }
-})
-const fs = require('fs')
-
-server.on('up', () => {
-  console.log('server up at', server.whoami())
-})
-
-server.add({ cmd: 'read' }, (req, reply) => {
-  reply(null, {
-    streams: {
-      out: fs.createReadStream(__filename)
-    }
-  })
-})
-
-//or using the sugar free syntax
-server.add('write', (req, reply) => {
-  reply(null, {
-    answering: 'foo'
-  })
-})
-```
+* [upring-kv](https://github.com/mcollina/upring-kv), a scalable key/value
+  store accessible over HTTP.
+* [upring-pubsub](https://github.com/mcollina/upring-pubsub), a scalable
+  publish subscribe system without a central broker.
+* [upring-control](https://github.com/mcollina/upring-control), a
+  monitoring dashboard for your upring cluster. See the demo at
+  https://youtu.be/fLDOCwiKbbo.
 
 We recommend using [baseswim](http://github.com/mcollina/baseswim) to
 run a base node. It also available as a tiny docker image.
