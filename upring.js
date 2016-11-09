@@ -165,13 +165,6 @@ function setupConn (that, peer, stream, retry) {
       nustream.on('error', onError)
     }
 
-    function deliver () {
-      that.logger.debug({ peer: peer }, 'resending messsages')
-      conn._pending.forEach(function (msg) {
-        that.request(msg.obj, msg.callback, msg._count)
-      })
-    }
-
     function onPeerDown (peerDown) {
       if (peerDown.id === peer.id) {
         that.logger.debug({ peer: peer }, 'peer down')
@@ -180,7 +173,6 @@ function setupConn (that, peer, stream, retry) {
         if (nustream) {
           nustream.destroy()
         }
-        deliver()
       }
     }
 
@@ -188,7 +180,6 @@ function setupConn (that, peer, stream, retry) {
       that.logger.debug({ peer: peer }, 'reconnected')
       setupConn(that, peer, nustream, true)
       that._hashring.removeListener('peerDown', onPeerDown)
-      deliver()
     }
 
     function onError () {
@@ -201,7 +192,6 @@ function setupConn (that, peer, stream, retry) {
     retry = true
   }, 10 * 1000).unref() // 10 seconds
 
-  conn._pending = new Set()
   that._peers[peer.id] = conn
   return conn
 }
@@ -240,22 +230,31 @@ UpRing.prototype.request = function (obj, callback, _count) {
     }
 
     const conn = this.peerConn(peer)
-    const msg = { obj, callback, _count }
-
-    conn._pending.add(msg)
 
     if (conn.destroyed) {
-      // avoid calling, the retry mechanism will kick in
+      // TODO make this dependent on the gossip interval
+      setTimeout(retry, 500, this, obj, callback, _count)
       return
     }
 
-    conn.request(obj, function (err, result) {
-      conn._pending.delete(msg)
+    conn.request(obj, (err, result) => {
+      if (err) {
+        // the peer has changed
+        if (this._hashring.lookup(obj.key).id !== peer.id || conn.destroyed) {
+          // TODO make this dependent on the gossip interval
+          setTimeout(retry, 500, this, obj, callback, _count)
+          return
+        }
+      }
       callback(err, result)
     })
   }
 
   return this
+}
+
+function retry (that, obj, callback, _count) {
+  that.request(obj, callback, _count)
 }
 
 UpRing.prototype.add = function (pattern, func) {
