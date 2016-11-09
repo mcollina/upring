@@ -34,12 +34,18 @@ function UpRing (opts) {
   this._inbound = new Set()
   this.logger = opts.logger ? opts.logger.child({ serializers }) : pino({ serializers })
   this.info = {}
+  this.ready = false
 
   if (!opts.logger) {
     this.logger.level = opts.logLevel || 'info'
   }
 
   this._dispatch = (req, reply) => {
+    if (!this.ready) {
+      this.on('up', this._dispatch.bind(this, req, reply))
+      return
+    }
+
     var func
     this.emit('prerequest', req)
     if (this._router) {
@@ -88,6 +94,7 @@ function UpRing (opts) {
     // needed because of request retrials
     this._hashring.setMaxListeners(0)
     this._hashring.on('up', () => {
+      this.ready = true
       this.logger = this.logger.child({ id: this.whoami() })
       this.logger.info({ address: this._server.address() }, 'node up')
       this.emit('up')
