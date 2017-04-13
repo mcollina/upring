@@ -1,6 +1,6 @@
 {
   "name": "upring",
-  "version": "0.14.6",
+  "version": "0.14.7",
   "description": "application-level sharding on node.js streams",
   "main": "upring.js",
   "scripts": {
@@ -11,7 +11,7 @@
   "precommit": "test",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mcollina/upring.git"
+    "url": "git+https://github.com/upringjs/upring.git"
   },
   "keywords": [
     "ring",
@@ -25,9 +25,9 @@
   "author": "Matteo Collina <hello@matteocollina.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/mcollina/upring/issues"
+    "url": "https://github.com/upringjs/upring/issues"
   },
-  "homepage": "https://github.com/mcollina/upring#readme",
+  "homepage": "https://github.com/upringjs/upring#readme",
   "devDependencies": {
     "concat-stream": "^1.5.1",
     "coveralls": "^2.11.14",
