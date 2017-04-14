@@ -8,7 +8,7 @@
 
 **UpRing** provides application-level sharding, based on node.js streams. UpRing allocates some resources to a node, based on the hash of a `key`, and allows you to query the node using a request response pattern (based on JS objects) which can embed streams.
 
-**UpRing** simplifies the implementation and deployment of a cluster of nodes using a gossip membership protocol and a [consistent hashing](https://en.wikipedia.org/wiki/Consistent_hashing) scheme (see [swim-hashring](https://github.com/mcollina/swim-hashring)). It uses [tentacoli](https://github.com/mcollina/tentacoli) as a transport layer.
+**UpRing** simplifies the implementation and deployment of a cluster of nodes using a gossip membership protocol and a [consistent hashing](https://en.wikipedia.org/wiki/Consistent_hashing) scheme (see [swim-hashring](https://github.com/upringjs/swim-hashring)). It uses [tentacoli](https://github.com/mcollina/tentacoli) as a transport layer.
 
 * [Installation](#install)
 * [Examples](#examples)
@@ -27,15 +27,15 @@ npm i upring
 
 Check out:
 
-* [upring-kv](https://github.com/mcollina/upring-kv), a scalable key/value
+* [upring-kv](https://github.com/upringjs/upring-kv), a scalable key/value
   store accessible over HTTP.
-* [upring-pubsub](https://github.com/mcollina/upring-pubsub), a scalable
+* [upring-pubsub](https://github.com/upringjs/upring-pubsub), a scalable
   publish subscribe system without a central broker.
-* [upring-control](https://github.com/mcollina/upring-control), a
+* [upring-control](https://github.com/upringjs/upring-control), a
   monitoring dashboard for your upring cluster. See the demo at
   https://youtu.be/fLDOCwiKbbo.
 
-We recommend using [baseswim](http://github.com/mcollina/baseswim) to
+We recommend using [baseswim](http://github.com/upringjs/baseswim) to
 run a base node. It also available as a tiny docker image.
 
 <a name="api"></a>
@@ -62,7 +62,7 @@ Create a new upring.
 Options:
 
 * `hashring`: Options for
-  [swim-hashring](http://github.com/mcollina/swim-hashring).
+  [swim-hashring](http://github.com/upringjs/swim-hashring).
 * `client`: if the current node can answer request from other peers or
   not. Defaults to `false`. Alias for `hashring.client`
 * `base`: alias for `hashring.base`.
@@ -76,10 +76,10 @@ Events:
 
 * `up`: when this instance is up & running and properly configured.
 * `move`: see
-  [swim-hashring](http://github.com/mcollina/swim-hashring) `'move'`
+  [swim-hashring](http://github.com/upringjs/swim-hashring) `'move'`
 event.
 * `steal`: see
-  [swim-hashring](http://github.com/mcollina/swim-hashring) `'steal'`
+  [swim-hashring](http://github.com/upringjs/swim-hashring) `'steal'`
 event.
 * `request`: when a request comes in to be handled by the current
   node, if the router is not configured. It has the request object as first argument, a function to call
@@ -134,7 +134,7 @@ streams, which will be closed or errored.
 <a name="peers"></a>
 ### instance.peers([myself])
 
-All the other peers, as computed by [swim-hashring](http://github.com/mcollina/swim-hashring). If `myself` is set to `true`, then we get data of the current peer as well.
+All the other peers, as computed by [swim-hashring](http://github.com/upringjs/swim-hashring). If `myself` is set to `true`, then we get data of the current peer as well.
 
 Example:
 
@@ -355,11 +355,11 @@ This project is kindly sponsored by [nearForm](http://nearform.com).
 
 MIT
 
-[logo-url]: https://raw.githubusercontent.com/mcollina/upring/master/upring.png
+[logo-url]: https://raw.githubusercontent.com/upringjs/upring/master/upring.png
 [npm-badge]: https://badge.fury.io/js/upring.svg
 [npm-url]: https://badge.fury.io/js/upring
-[travis-badge]: https://api.travis-ci.org/mcollina/upring.svg
-[travis-url]: https://travis-ci.org/mcollina/upring
-[pino]: https://github.com/mcollina/pino
-[coveralls-badge]: https://coveralls.io/repos/github/mcollina/upring/badge.svg?branch=master
-[coveralls-url]: https://coveralls.io/github/mcollina/upring?branch=master
+[travis-badge]: https://api.travis-ci.org/upringjs/upring.svg
+[travis-url]: https://travis-ci.org/upringjs/upring
+[pino]: https://github.com/upringjs/pino
+[coveralls-badge]: https://coveralls.io/repos/github/upringjs/upring/badge.svg?branch=master
+[coveralls-url]: https://coveralls.io/github/upringjs/upring?branch=master
