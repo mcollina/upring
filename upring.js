@@ -54,8 +54,8 @@ function UpRing (opts) {
         var result = func(req, reply)
         if (result && typeof result.then === 'function') {
           result
-            .then(res => reply(null, res))
-            .catch(err => reply(err, null))
+            .then(res => process.nextTick(reply, null, res))
+            .catch(err => process.nextTick(reply, err, null))
         }
       } else {
         reply(new Error('message does not match any pattern'))
