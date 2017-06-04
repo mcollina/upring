@@ -36,7 +36,8 @@
     "pre-commit": "^1.1.2",
     "snazzy": "^6.0.0",
     "standard": "^9.0.0",
-    "tap": "^10.0.0"
+    "tap": "^10.0.0",
+    "then-sleep": "^1.0.1"
   },
   "dependencies": {
     "bloomrun": "^3.0.0",
