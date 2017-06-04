@@ -51,7 +51,12 @@ function UpRing (opts) {
     if (this._router) {
       func = this._router.lookup(req)
       if (func) {
-        func(req, reply)
+        var result = func(req, reply)
+        if (result && typeof result.then === 'function') {
+          result
+            .then(res => reply(null, res))
+            .catch(err => reply(err, null))
+        }
       } else {
         reply(new Error('message does not match any pattern'))
       }
