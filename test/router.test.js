@@ -124,7 +124,7 @@ test('not found', { timeout: 5000 }, (t) => {
 
 test('async await support', t => {
   if (Number(process.versions.node[0]) >= 8) {
-    require('./async-await')(t.test)
+    require('./async-await').asyncAwaitTestAdd(t.test)
   } else {
     t.pass('Skip because Node version < 8')
   }
