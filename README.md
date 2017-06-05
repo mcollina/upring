@@ -120,6 +120,30 @@ instance.request({
 }, (err) => {
   if (err) throw err
 })
+
+// promises are supported as well!
+instance
+  .request({
+    key: 'some data',
+    hello: 42
+  })
+  .then(response => {
+    // handle response
+  })
+  .catch(err => {
+    // handle error
+  })
+
+// were your saying async await?
+try {
+  const response = await instance.request({
+    key: 'some data',
+    hello: 42
+  })
+  // handle response
+} catch (err) {
+  // handle error
+}
 ```
 
 See [tentacoli](http://github.com/mcollina/tentacoli) for the full
@@ -201,6 +225,12 @@ instance.add('parse', (req, reply) => {
       any: stream
     }
   })
+})
+
+// async await is supported as well
+instance.add('parse', async (req, reply) => {
+  const data = await something()
+  return { data }
 })
 ```
 
