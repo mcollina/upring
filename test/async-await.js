@@ -62,7 +62,7 @@ function asyncAwaitTestRequest (test) {
 
       async function makeRequest () {
         try {
-          const response = await i1.request({
+          const response = await i1.requestp({
             key: i2Key,
             hello: 42
           })
@@ -74,7 +74,7 @@ function asyncAwaitTestRequest (test) {
         }
 
         try {
-          const response = await i2.request({
+          const response = await i2.requestp({
             key: i1Key,
             hello: 42
           })

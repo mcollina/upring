@@ -189,7 +189,7 @@ test('request to node 2', { timeout: 5000 }, (t) => {
   })
 })
 
-test('request should support promises', { timeout: 5000 }, (t) => {
+test('requestp should support promises', { timeout: 5000 }, (t) => {
   t.plan(8)
 
   bootTwo(t, (i1, i2) => {
@@ -197,7 +197,7 @@ test('request should support promises', { timeout: 5000 }, (t) => {
     let i2Key = getKey(i2)
 
     i1
-      .request({
+      .requestp({
         key: i2Key,
         hello: 42
       })
@@ -211,7 +211,7 @@ test('request should support promises', { timeout: 5000 }, (t) => {
       })
 
     i2
-      .request({
+      .requestp({
         key: i1Key,
         hello: 42
       })
