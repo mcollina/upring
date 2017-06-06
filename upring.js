@@ -11,7 +11,7 @@ const networkAddress = require('network-address')
 const bloomrun = require('bloomrun')
 const pino = require('pino')
 const tinysonic = require('tinysonic')
-const promisify = require('util.promisify')
+// const promisify = require('util.promisify')
 const tracker = require('./lib/tracker')
 const replicator = require('./lib/replicator')
 const serializers = require('./lib/serializers')
@@ -210,7 +210,7 @@ UpRing.prototype.mymeta = function () {
   return this._hashring.mymeta()
 }
 
-UpRing.prototype.request = promisify(function (obj, callback, _count) {
+UpRing.prototype.request = function (obj, callback, _count) {
   if (this._hashring.allocatedToMe(obj.key)) {
     this.logger.trace({ msg: obj }, 'local call')
     this._dispatch(obj, dezalgo(callback))
@@ -257,7 +257,20 @@ UpRing.prototype.request = promisify(function (obj, callback, _count) {
   }
 
   return this
-})
+}
+
+UpRing.prototype.requestp = function (obj) {
+  return new Promise(requestp.bind(this))
+
+  function requestp (resolve, reject) {
+    this.request(obj, callback)
+
+    function callback (err, result) {
+      if (err) return reject(err)
+      resolve(result)
+    }
+  }
+}
 
 function retry (that, obj, callback, _count) {
   that.request(obj, callback, _count)

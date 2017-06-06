@@ -51,7 +51,6 @@
     "pump": "^1.0.1",
     "swim-hashring": "^0.5.0",
     "tentacoli": "^0.6.0",
-    "tinysonic": "^1.1.1",
-    "util.promisify": "^1.0.0"
+    "tinysonic": "^1.1.1"
   }
 }
