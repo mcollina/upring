@@ -11,7 +11,7 @@ const networkAddress = require('network-address')
 const bloomrun = require('bloomrun')
 const pino = require('pino')
 const tinysonic = require('tinysonic')
-// const promisify = require('util.promisify')
+const promisify = require('util.promisify')
 const tracker = require('./lib/tracker')
 const replicator = require('./lib/replicator')
 const serializers = require('./lib/serializers')
@@ -259,18 +259,7 @@ UpRing.prototype.request = function (obj, callback, _count) {
   return this
 }
 
-UpRing.prototype.requestp = function (obj) {
-  return new Promise(requestp.bind(this))
-
-  function requestp (resolve, reject) {
-    this.request(obj, callback)
-
-    function callback (err, result) {
-      if (err) return reject(err)
-      resolve(result)
-    }
-  }
-}
+UpRing.prototype.requestp = promisify(UpRing.prototype.request)
 
 function retry (that, obj, callback, _count) {
   that.request(obj, callback, _count)
