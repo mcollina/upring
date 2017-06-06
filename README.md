@@ -43,6 +43,7 @@ run a base node. It also available as a tiny docker image.
 
   * <a href="#constructor"><code><b>upring()</b></code></a>
   * <a href="#request"><code>instance.<b>request()</b></code></a>
+  * <a href="#requestp"><code>instance.<b>requestp()</b></code></a>
   * <a href="#peerConn"><code>instance.<b>peerConn()</b></code></a>
   * <a href="#peers"><code>instance.<b>peers()</b></code></a>
   * <a href="#add"><code>instance.<b>add()</b></code></a>
@@ -120,10 +121,24 @@ instance.request({
 }, (err) => {
   if (err) throw err
 })
+```
 
-// promises are supported as well!
+See [tentacoli](http://github.com/mcollina/tentacoli) for the full
+details on the request/response format.
+
+#### Retry logic
+
+If the target instance fails while _waiting for a response_, the message
+will be sent to the next peer in the ring. This does not applies to
+streams, which will be closed or errored.
+
+<a name="requestp"></a>
+### instance.requestp(obj)
+
+Same as <a href="#request"><code>instance.<b>request()</b></code></a>, but with promises.
+```js
 instance
-  .request({
+  .requestp({
     key: 'some data',
     hello: 42
   })
@@ -136,7 +151,7 @@ instance
 
 // were your saying async await?
 try {
-  const response = await instance.request({
+  const response = await instance.requestp({
     key: 'some data',
     hello: 42
   })
@@ -145,15 +160,6 @@ try {
   // handle error
 }
 ```
-
-See [tentacoli](http://github.com/mcollina/tentacoli) for the full
-details on the request/response format.
-
-#### Retry logic
-
-If the target instance fails while _waiting for a response_, the message
-will be sent to the next peer in the ring. This does not applies to
-streams, which will be closed or errored.
 
 <a name="peers"></a>
 ### instance.peers([myself])
