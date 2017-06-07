@@ -11,6 +11,7 @@ const networkAddress = require('network-address')
 const bloomrun = require('bloomrun')
 const pino = require('pino')
 const tinysonic = require('tinysonic')
+const promisify = require('util.promisify')
 const tracker = require('./lib/tracker')
 const replicator = require('./lib/replicator')
 const serializers = require('./lib/serializers')
@@ -51,7 +52,12 @@ function UpRing (opts) {
     if (this._router) {
       func = this._router.lookup(req)
       if (func) {
-        func(req, reply)
+        var result = func(req, reply)
+        if (result && typeof result.then === 'function') {
+          result
+            .then(res => process.nextTick(reply, null, res))
+            .catch(err => process.nextTick(reply, err, null))
+        }
       } else {
         reply(new Error('message does not match any pattern'))
       }
@@ -252,6 +258,8 @@ UpRing.prototype.request = function (obj, callback, _count) {
 
   return this
 }
+
+UpRing.prototype.requestp = promisify(UpRing.prototype.request)
 
 function retry (that, obj, callback, _count) {
   that.request(obj, callback, _count)

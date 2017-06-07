@@ -43,6 +43,7 @@ run a base node. It also available as a tiny docker image.
 
   * <a href="#constructor"><code><b>upring()</b></code></a>
   * <a href="#request"><code>instance.<b>request()</b></code></a>
+  * <a href="#requestp"><code>instance.<b>requestp()</b></code></a>
   * <a href="#peerConn"><code>instance.<b>peerConn()</b></code></a>
   * <a href="#peers"><code>instance.<b>peers()</b></code></a>
   * <a href="#add"><code>instance.<b>add()</b></code></a>
@@ -131,6 +132,35 @@ If the target instance fails while _waiting for a response_, the message
 will be sent to the next peer in the ring. This does not applies to
 streams, which will be closed or errored.
 
+<a name="requestp"></a>
+### instance.requestp(obj)
+
+Same as <a href="#request"><code>instance.<b>request()</b></code></a>, but with promises.
+```js
+instance
+  .requestp({
+    key: 'some data',
+    hello: 42
+  })
+  .then(response => {
+    // handle response
+  })
+  .catch(err => {
+    // handle error
+  })
+
+// were your saying async await?
+try {
+  const response = await instance.requestp({
+    key: 'some data',
+    hello: 42
+  })
+  // handle response
+} catch (err) {
+  // handle error
+}
+```
+
 <a name="peers"></a>
 ### instance.peers([myself])
 
@@ -201,6 +231,12 @@ instance.add('parse', (req, reply) => {
       any: stream
     }
   })
+})
+
+// async await is supported as well
+instance.add('parse', async (req, reply) => {
+  const data = await something()
+  return { data }
 })
 ```
 
