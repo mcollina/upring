@@ -42,7 +42,7 @@ function UpRing (opts) {
 
   this._dispatch = (req, reply) => {
     if (!this.ready) {
-      this.on('up', this._dispatch.bind(this, req, reply))
+      this.once('up', this._dispatch.bind(this, req, reply))
       return
     }
 
@@ -123,10 +123,16 @@ function UpRing (opts) {
 inherits(UpRing, EE)
 
 UpRing.prototype.whoami = function () {
+  if (!this.ready) return null
   return this._hashring.whoami()
 }
 
 UpRing.prototype.join = function (peers, cb) {
+  if (!this.ready) {
+    this.once('up', this.join.bind(this, peers, cb))
+    return
+  }
+
   if (!Array.isArray(peers)) {
     peers = [peers]
   }
@@ -134,6 +140,7 @@ UpRing.prototype.join = function (peers, cb) {
 }
 
 UpRing.prototype.allocatedToMe = function (key) {
+  if (!this.ready) return null
   return this._hashring.allocatedToMe(key)
 }
 
@@ -205,6 +212,11 @@ UpRing.prototype.mymeta = function () {
 }
 
 UpRing.prototype.request = function (obj, callback, _count) {
+  if (!this.ready) {
+    this.once('up', this.request.bind(this, obj, callback))
+    return
+  }
+
   if (this._hashring.allocatedToMe(obj.key)) {
     this.logger.trace({ msg: obj }, 'local call')
     this._dispatch(obj, dezalgo(callback))
