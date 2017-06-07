@@ -268,3 +268,61 @@ test('whoami should return null if upring is not ready', { timeout: 5000 }, (t) 
     instance.close(t.error)
   })
 })
+
+test('requestp should support promises', { timeout: 5000 }, (t) => {
+  t.plan(8)
+
+  bootTwo(t, (i1, i2) => {
+    let i1Key = getKey(i1)
+    let i2Key = getKey(i2)
+
+    i1
+      .requestp({
+        key: i2Key,
+        hello: 42
+      })
+      .then(response => {
+        t.deepEqual(response, {
+          replying: 'i2'
+        }, 'response matches')
+      })
+      .catch(err => {
+        t.error(err)
+      })
+
+    i2
+      .requestp({
+        key: i1Key,
+        hello: 42
+      })
+      .then(response => {
+        t.deepEqual(response, {
+          replying: 'i1'
+        }, 'response matches')
+      })
+      .catch(err => {
+        t.error(err)
+      })
+
+    i1.on('request', (req, reply) => {
+      t.equal(req.key, i1Key, 'key matches')
+      t.equal(req.hello, 42, 'other key matches')
+      reply(null, { replying: 'i1' })
+    })
+
+    i2.on('request', (req, reply) => {
+      t.equal(req.key, i2Key, 'key matches')
+      t.equal(req.hello, 42, 'other key matches')
+      reply(null, { replying: 'i2' })
+    })
+  })
+})
+
+test('async await support', t => {
+  if (Number(process.versions.node[0]) >= 8) {
+    require('./async-await').asyncAwaitTestRequest(t.test)
+  } else {
+    t.pass('Skip because Node version < 8')
+  }
+  t.end()
+})
