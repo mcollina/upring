@@ -188,3 +188,83 @@ test('request to node 2', { timeout: 5000 }, (t) => {
     })
   })
 })
+
+test('request should wait for "up" event', { timeout: 5000 }, (t) => {
+  t.plan(5)
+
+  const instance = upring(opts({
+    logLevel: 'error',
+    base: []
+  }))
+
+  var key = 'hello'
+
+  instance.on('request', (req, reply) => {
+    t.equal(req.key, key, 'key matches')
+    t.equal(req.hello, 42, 'other key matches')
+    reply(null, { replying: req.key })
+  })
+
+  instance.request({
+    key: key,
+    hello: 42
+  }, (err, response) => {
+    t.error(err)
+    t.deepEqual(response, {
+      replying: key
+    }, 'response matches')
+    instance.close(t.error)
+  })
+})
+
+test('join should wait for "up" event', { timeout: 5000 }, (t) => {
+  t.plan(1)
+
+  const instance1 = upring(opts({
+    logLevel: 'error',
+    base: []
+  }))
+
+  instance1.on('up', () => {
+    const instance2 = upring(opts({
+      logLevel: 'error',
+      base: []
+    }))
+
+    instance2.join(instance1.whoami(), () => {
+      t.pass('everything ok!')
+      instance1.close()
+      instance2.close()
+    })
+  })
+})
+
+test('allocatedToMe should return null if upring is not ready', { timeout: 5000 }, (t) => {
+  t.plan(2)
+
+  const instance = upring(opts({
+    logLevel: 'error',
+    base: []
+  }))
+
+  t.equal(instance.allocatedToMe(), null)
+
+  instance.on('up', () => {
+    instance.close(t.error)
+  })
+})
+
+test('whoami should return null if upring is not ready', { timeout: 5000 }, (t) => {
+  t.plan(2)
+
+  const instance = upring(opts({
+    logLevel: 'error',
+    base: []
+  }))
+
+  t.equal(instance.whoami(), null)
+
+  instance.on('up', () => {
+    instance.close(t.error)
+  })
+})
