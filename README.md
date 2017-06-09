@@ -39,7 +39,7 @@ We recommend using [baseswim](http://github.com/upringjs/baseswim) to
 run a base node. It also available as a tiny docker image.
 
 <a name="api"></a>
-## API
+## API
 
   * <a href="#constructor"><code><b>upring()</b></code></a>
   * <a href="#request"><code>instance.<b>request()</b></code></a>
