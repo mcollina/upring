@@ -1,6 +1,5 @@
 'use strict'
 
-const hashring = require('swim-hashring')
 const EE = require('events').EventEmitter
 const inherits = require('util').inherits
 const net = require('net')
@@ -12,8 +11,7 @@ const bloomrun = require('bloomrun')
 const pino = require('pino')
 const tinysonic = require('tinysonic')
 const promisify = require('util.promisify')
-const tracker = require('./lib/tracker')
-const replicator = require('./lib/replicator')
+const avvio = require('avvio')
 const serializers = require('./lib/serializers')
 const monitoring = require('./lib/monitoring')
 
@@ -26,102 +24,26 @@ function UpRing (opts) {
   opts.port = opts.port || 0
   opts.host = opts.host || networkAddress()
 
-  const hashringOpts = opts.hashring || {}
-  hashringOpts.base = hashringOpts.base || opts.base
-  hashringOpts.name = hashringOpts.name || opts.name
-  hashringOpts.client = hashringOpts.client || opts.client
-  hashringOpts.host = opts.host
+  const app = avvio(this)
 
   this._inbound = new Set()
   this.logger = opts.logger ? opts.logger.child({ serializers }) : pino({ serializers })
   this.info = {}
-  this.ready = false
+  this.isReady = false
 
   if (!opts.logger) {
     this.logger.level = opts.logLevel || 'info'
   }
 
-  this._dispatch = (req, reply) => {
-    if (!this.ready) {
-      this.once('up', this._dispatch.bind(this, req, reply))
-      return
-    }
+  this
+    .use(require('./lib/dispatch'))
+    .use(require('./lib/tcp-server'), opts)
+    .use(require('./lib/hashring'), opts)
 
-    var func
-    this.emit('prerequest', req)
-    if (this._router) {
-      func = this._router.lookup(req)
-      if (func) {
-        var result = func(req, reply)
-        if (result && typeof result.then === 'function') {
-          result
-            .then(res => process.nextTick(reply, null, res))
-            .catch(err => process.nextTick(reply, err, null))
-        }
-      } else {
-        reply(new Error('message does not match any pattern'))
-      }
-    } else {
-      this.emit('request', req, reply)
-    }
-  }
-
-  this._server = net.createServer((stream) => {
-    if (this.closed) {
-      stream.on('error', noop)
-      stream.destroy()
-      return
-    }
-
-    this.logger.debug({ address: stream.address() }, 'incoming connection')
-
-    const instance = tentacoli()
-    this._inbound.add(instance)
-    pump(stream, instance, stream, () => {
-      this.logger.debug({ address: stream.address() }, 'closed connection')
-      this._inbound.delete(instance)
-    })
-    instance.on('request', this._dispatch)
+  app.on('start', () => {
+    this.isReady = true
+    this.emit('up')
   })
-  this._server.listen(opts.port, opts.host, () => {
-    this.logger.debug({ address: this._server.address() }, 'listening')
-    const local = hashringOpts.local = hashringOpts.local || {}
-    const meta = local.meta = local.meta || {}
-    meta.upring = {
-      address: opts.host,
-      port: this._server.address().port
-    }
-    this._hashring = hashring(hashringOpts)
-    this._tracker = tracker(this._hashring)
-    this._replicator = replicator(this._hashring)
-    this.track = this._tracker.track
-    this.replica = this._replicator.replica
-
-    // needed because of request retrials
-    this._hashring.setMaxListeners(0)
-    this._hashring.on('up', () => {
-      this.ready = true
-      this.logger = this.logger.child({ id: this.whoami() })
-      this.logger.info({ address: this._server.address() }, 'node up')
-      this.emit('up')
-    })
-
-    this._hashring.on('move', this._tracker.check)
-    this._hashring.on('move', (info) => {
-      this.logger.trace(info, 'move')
-      this.emit('move', info)
-    })
-    this._hashring.on('steal', this._replicator.check)
-    this._hashring.on('steal', (info) => {
-      this.logger.trace(info, 'steal')
-      this.emit('steal', info)
-    })
-    this._hashring.on('error', this.emit.bind(this, 'error'))
-    this._hashring.on('peerUp', this.emit.bind(this, 'peerUp'))
-    this._hashring.on('peerDown', this.emit.bind(this, 'peerDown'))
-  })
-
-  this._server.on('error', this.emit.bind(this, 'error'))
 
   this._peers = {}
 }
@@ -129,12 +51,12 @@ function UpRing (opts) {
 inherits(UpRing, EE)
 
 UpRing.prototype.whoami = function () {
-  if (!this.ready) return null
+  if (!this.isReady) return null
   return this._hashring.whoami()
 }
 
 UpRing.prototype.join = function (peers, cb) {
-  if (!this.ready) {
+  if (!this.isReady) {
     this.once('up', this.join.bind(this, peers, cb))
     return
   }
@@ -146,7 +68,7 @@ UpRing.prototype.join = function (peers, cb) {
 }
 
 UpRing.prototype.allocatedToMe = function (key) {
-  if (!this.ready) return null
+  if (!this.isReady) return null
   return this._hashring.allocatedToMe(key)
 }
 
@@ -218,7 +140,7 @@ UpRing.prototype.mymeta = function () {
 }
 
 UpRing.prototype.request = function (obj, callback, _count) {
-  if (!this.ready) {
+  if (!this.isReady) {
     this.once('up', this.request.bind(this, obj, callback))
     return
   }

@@ -40,6 +40,7 @@
     "then-sleep": "^1.0.1"
   },
   "dependencies": {
+    "avvio": "^0.6.1",
     "bloomrun": "^3.0.0",
     "end-of-stream": "^1.4.0",
     "fastzalgo": "^1.0.0",
