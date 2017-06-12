@@ -36,7 +36,6 @@ function UpRing (opts) {
   }
 
   this
-    .use(require('./lib/dispatch'))
     .use(require('./lib/tcp-server'), opts)
     .use(require('./lib/hashring'), opts)
 
@@ -44,6 +43,31 @@ function UpRing (opts) {
     this.isReady = true
     this.emit('up')
   })
+
+  this._dispatch = (req, reply) => {
+    if (!this.ready) {
+      this.once('up', this._dispatch.bind(this, req, reply))
+      return
+    }
+
+    var func
+    this.emit('prerequest', req)
+    if (this._router) {
+      func = this._router.lookup(req)
+      if (func) {
+        var result = func(req, reply)
+        if (result && typeof result.then === 'function') {
+          result
+            .then(res => process.nextTick(reply, null, res))
+            .catch(err => process.nextTick(reply, err, null))
+        }
+      } else {
+        reply(new Error('message does not match any pattern'))
+      }
+    } else {
+      this.emit('request', req, reply)
+    }
+  }
 
   this._peers = {}
 }
