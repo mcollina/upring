@@ -54,6 +54,9 @@ run a base node. It also available as a tiny docker image.
   * <a href="#info"><code>instance.<b>info</b></code></a>
   * <a href="#logger"><code>instance.<b>logger</b></code></a>
   * <a href="#close"><code>instance.<b>close()</b></code></a>
+  * <a href="#avvio"><code>instance.<b>use()</b></code></a>
+  * <a href="#avvio"><code>instance.<b>after()</b></code></a>
+  * <a href="#avvio"><code>instance.<b>ready()</b></code></a>
 
 <a name="constructor"></a>
 ### upring(opts)
@@ -382,6 +385,36 @@ conn.request({
 })
 ```
 
+<a name="avvio"></a>
+## use, after and ready
+UpRing exposes three apis to extend the current instance, in a safe asynchronous bootstrap procedure.
+With `use` you can add new methods or properties to the current instance and be sure that everything will be loaded before the `up` event.  
+Example:
+```js
+// main.js
+upring.use(require('./feature'), { some: 'option' }, err => {
+  if (err) throw err
+})
+
+// feature.js
+module.exports = function (upring, opts, next) {
+  upring.sum = (a, b) => a + b
+  next()
+}
+```
+You can use `after` if you need to know when a plugin has been loaded:
+```js
+// main.js
+upring
+  .use(require('./feature'), { some: 'option' }, err => {
+    if (err) throw err
+  })
+  .after(() => {
+    console.log('loaded!')
+  })
+```
+You can also use `ready` if you need to know when everything is ready but the `up` event has not been fired yet.  
+If you need more info about how this lifecycle works, take a look to the [avvio](https://github.com/mcollina/avvio) documentation.
 
 ## Acknowledgements
 
