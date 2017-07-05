@@ -75,7 +75,7 @@ function UpRing (opts) {
 inherits(UpRing, EE)
 
 UpRing.prototype.whoami = function () {
-  if (!this.isReady) return null
+  if (!this.isReady) throw new Error('UpRing not ready yet')
   return this._hashring.whoami()
 }
 
