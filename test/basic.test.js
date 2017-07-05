@@ -254,17 +254,18 @@ test('allocatedToMe should return null if upring is not ready', { timeout: 5000 
   })
 })
 
-test('whoami should return null if upring is not ready', { timeout: 5000 }, (t) => {
-  t.plan(2)
+test('whoami should throw if upring is not ready', { timeout: 5000 }, (t) => {
+  t.plan(3)
 
   const instance = upring(opts({
     logLevel: 'error',
     base: []
   }))
 
-  t.equal(instance.whoami(), null)
+  t.throws(instance.whoami.bind(instance))
 
   instance.on('up', () => {
+    t.ok(instance.whoami())
     instance.close(t.error)
   })
 })
