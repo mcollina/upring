@@ -39,13 +39,19 @@ function UpRing (opts) {
     .use(require('./lib/tcp-server'), opts)
     .use(require('./lib/hashring'), opts)
 
-  app.on('start', () => {
+  // for some reasons, ready() will not
+  // work to set isReady
+  app.use((i, opts, cb) => {
     this.isReady = true
+    cb()
+  })
+
+  app.on('start', () => {
     this.emit('up')
   })
 
   this._dispatch = (req, reply) => {
-    if (!this.ready) {
+    if (!this.isReady) {
       this.once('up', this._dispatch.bind(this, req, reply))
       return
     }

@@ -36,7 +36,7 @@
     "pre-commit": "^1.1.2",
     "snazzy": "^7.0.0",
     "standard": "^10.0.0",
-    "tap": "^10.3.3",
+    "tap": "^10.7.0",
     "then-sleep": "^1.0.1"
   },
   "dependencies": {
@@ -46,9 +46,9 @@
     "fastzalgo": "^1.0.0",
     "from2": "^2.3.0",
     "functional-red-black-tree": "^1.0.1",
-    "lru-cache": "^4.1.0",
+    "lru-cache": "^4.1.1",
     "network-address": "^1.1.0",
-    "pino": "^4.5.4",
+    "pino": "^4.6.0",
     "pump": "^1.0.1",
     "swim-hashring": "^0.5.0",
     "tentacoli": "^0.6.0",
