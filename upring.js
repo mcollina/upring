@@ -76,6 +76,28 @@ function UpRing (opts) {
   }
 
   this._peers = {}
+
+  this.onClose(function (_err, that, cb) {
+    if (that._tracker) {
+      that._tracker.clear()
+    }
+
+    Object.keys(that._peers).forEach((id) => {
+      that._peers[id].destroy()
+    })
+
+    that._inbound.forEach((s) => {
+      s.destroy()
+    })
+
+    that._hashring.close()
+
+    that._server.close((err) => {
+      that.logger.info('closed')
+      that.emit('close')
+      cb(err || _err)
+    })
+  })
 }
 
 inherits(UpRing, EE)
@@ -247,37 +269,5 @@ UpRing.prototype.add = function (pattern, func) {
 
   this._router.add(pattern, func)
 }
-
-UpRing.prototype.close = function (cb) {
-  cb = cb || noop
-
-  if (this.closed) {
-    return cb()
-  }
-
-  if (this._tracker) {
-    this._tracker.clear()
-  }
-
-  this.closed = true
-
-  Object.keys(this._peers).forEach((id) => {
-    this._peers[id].destroy()
-  })
-
-  this._inbound.forEach((s) => {
-    s.destroy()
-  })
-  this._hashring.close()
-  this._server.close((err) => {
-    this.logger.info('closed')
-    this.emit('close')
-    cb(err)
-  })
-
-  return this
-}
-
-function noop () {}
 
 module.exports = UpRing

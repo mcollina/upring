@@ -31,7 +31,7 @@
   "devDependencies": {
     "concat-stream": "^1.5.1",
     "coveralls": "^2.13.1",
-    "farmhash": "^1.2.0",
+    "farmhash": "^2.0.0",
     "flush-write-stream": "^1.0.0",
     "pre-commit": "^1.1.2",
     "snazzy": "^7.0.0",
@@ -40,7 +40,7 @@
     "then-sleep": "^1.0.1"
   },
   "dependencies": {
-    "avvio": "^0.6.1",
+    "avvio": "^2.0.0",
     "bloomrun": "^3.0.0",
     "end-of-stream": "^1.4.0",
     "fastzalgo": "^1.0.0",
