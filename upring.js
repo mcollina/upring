@@ -77,7 +77,7 @@ function UpRing (opts) {
 
   this._peers = {}
 
-  this.onClose(function (_err, that, cb) {
+  this.onClose(function (that, cb) {
     if (that._tracker) {
       that._tracker.clear()
     }
@@ -95,7 +95,7 @@ function UpRing (opts) {
     that._server.close((err) => {
       that.logger.info('closed')
       that.emit('close')
-      cb(err || _err)
+      cb(err)
     })
   })
 }
