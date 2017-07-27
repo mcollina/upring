@@ -196,7 +196,7 @@ instance.peerConn(instance.peers()[0]).request({
 ```
 
 <a name="add"></a>
-### instance.add(pattern, func)
+### instance.add(pattern, [schema,] func)
 
 Execute the given function when the received received requests
 matches the given pattern. The request is matched using
@@ -240,6 +240,23 @@ instance.add('parse', (req, reply) => {
 instance.add('parse', async (req, reply) => {
   const data = await something()
   return { data }
+})
+```
+
+#### Validation
+Upring offers you out of the box a nice and standard way to validate your requests, [*JSON schema*](http://json-schema.org/)!  
+Internally uses [ajv](https://github.com/epoberezkin/ajv/blob/master/README.md) to achieve the maximum speed and correctness.
+```js
+instance.add({ cmd: 'parse' }, {
+  type: 'object',
+  properties: {
+    cmd: { type: 'string' },
+    key: { type: 'string' },
+    value: { type: 'number' }
+  },
+  required: ['cmd']
+}, (req, reply) => {
+  reply(null, req)
 })
 ```
 
