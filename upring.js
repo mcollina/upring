@@ -12,8 +12,11 @@ const pino = require('pino')
 const tinysonic = require('tinysonic')
 const promisify = require('util.promisify')
 const avvio = require('avvio')
+const Ajv = require('ajv')
+const ajv = new Ajv({ coerceTypes: true })
 const serializers = require('./lib/serializers')
 const monitoring = require('./lib/monitoring')
+const symbolSchema = Symbol('schema')
 
 function UpRing (opts) {
   if (!(this instanceof UpRing)) {
@@ -61,6 +64,13 @@ function UpRing (opts) {
     if (this._router) {
       func = this._router.lookup(req)
       if (func) {
+        if (func[symbolSchema]) {
+          var valid = func[symbolSchema](req)
+          if (valid !== true) {
+            return reply(new Error('400'), valid)
+          }
+        }
+
         var result = func(req, reply)
         if (result && typeof result.then === 'function') {
           result
@@ -251,11 +261,18 @@ function retry (that, obj, callback, _count) {
   that.request(obj, callback, _count)
 }
 
-UpRing.prototype.add = function (pattern, func) {
+UpRing.prototype.add = function (pattern, schema, func) {
   if (!this._router) {
     this._router = bloomrun()
     monitoring(this)
   }
+
+  if (typeof schema === 'function') {
+    func = schema
+    schema = null
+  }
+
+  func[symbolSchema] = schema === null ? null : ajv.compile(schema)
 
   if (typeof pattern === 'string') {
     let sonic = tinysonic(pattern)
