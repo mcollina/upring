@@ -44,6 +44,7 @@ run a base node. It also available as a tiny docker image.
   * <a href="#constructor"><code><b>upring()</b></code></a>
   * <a href="#request"><code>instance.<b>request()</b></code></a>
   * <a href="#requestp"><code>instance.<b>requestp()</b></code></a>
+  * <a href="#fire"><code>instance.<b>fire()</b></code></a>
   * <a href="#peerConn"><code>instance.<b>peerConn()</b></code></a>
   * <a href="#peers"><code>instance.<b>peers()</b></code></a>
   * <a href="#add"><code>instance.<b>add()</b></code></a>
@@ -162,6 +163,22 @@ try {
 } catch (err) {
   // handle error
 }
+```
+
+<a name="fire"></a>
+### instance.fire(obj)
+
+Fire and forget the given request to the ring. The node that will reply to the
+current enquiry will be picked by the `key` property in `obj`.  
+*If the given key does not exist in the ring, a debug log will be emitted.*
+
+Example:
+
+```js
+instance.fire({
+  key: 'some data',
+  hello: 42
+})
 ```
 
 <a name="peers"></a>
