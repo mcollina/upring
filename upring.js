@@ -257,6 +257,18 @@ UpRing.prototype.request = function (obj, callback, _count) {
 
 UpRing.prototype.requestp = promisify(UpRing.prototype.request)
 
+UpRing.prototype.fire = function (obj) {
+  process.nextTick(() => {
+    this.request(obj, fireCallback.bind(this))
+  })
+}
+
+function fireCallback (err) {
+  if (err) {
+    this.logger.debug(err, 'fire and forget')
+  }
+}
+
 function retry (that, obj, callback, _count) {
   that.request(obj, callback, _count)
 }
