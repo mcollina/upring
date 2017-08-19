@@ -166,11 +166,12 @@ try {
 ```
 
 <a name="fire"></a>
-### instance.fire(obj)
+### instance.fire(obj, [callback])
 
 Fire and forget the given request to the ring. The node that will reply to the
 current enquiry will be picked by the `key` property in `obj`.  
-*If the given key does not exist in the ring, a debug log will be emitted.*
+You can pass an optional callback that will be called if there is an error while sending the message, or after the message has been sent successfully.  
+*If the given key does not exist in the ring, a debug log will be emitted.*  
 
 Example:
 
