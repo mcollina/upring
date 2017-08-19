@@ -32,6 +32,7 @@ function UpRing (opts) {
   this._inbound = new Set()
   this.logger = opts.logger ? opts.logger.child({ serializers }) : pino({ serializers })
   this.info = {}
+  this._fireCallback = fireCallback.bind(this)
   this.isReady = false
 
   if (!opts.logger) {
@@ -211,10 +212,10 @@ UpRing.prototype.request = function (obj, callback, _count) {
     this.logger.trace({ msg: obj }, 'local call')
     this._dispatch(obj, dezalgo(callback))
   } else {
-    let peer = this._hashring.lookup(obj.key)
+    const peer = this._hashring.lookup(obj.key)
     this.logger.trace({ msg: obj, peer }, 'remote call')
 
-    let upring = peer.meta.upring
+    const upring = peer.meta.upring
     if (!upring || !upring.address || !upring.port) {
       callback(new Error('peer has invalid upring metadata'))
       return
@@ -258,7 +259,7 @@ UpRing.prototype.request = function (obj, callback, _count) {
 UpRing.prototype.requestp = promisify(UpRing.prototype.request)
 
 UpRing.prototype.fire = function (obj, callback, _count) {
-  callback = callback || fireCallback
+  callback = callback || this._fireCallback
   if (!this.isReady) {
     this.once('up', this.fire.bind(this, obj, callback))
     return
@@ -266,14 +267,14 @@ UpRing.prototype.fire = function (obj, callback, _count) {
 
   if (this._hashring.allocatedToMe(obj.key)) {
     this.logger.trace({ msg: obj }, 'local call')
-    this._dispatch(obj, dezalgo(callback.bind(this)))
+    this._dispatch(obj, dezalgo(callback))
   } else {
-    let peer = this._hashring.lookup(obj.key)
+    const peer = this._hashring.lookup(obj.key)
     this.logger.trace({ msg: obj, peer }, 'remote call')
 
-    let upring = peer.meta.upring
+    const upring = peer.meta.upring
     if (!upring || !upring.address || !upring.port) {
-      callback.call(this, new Error('peer has invalid upring metadata'))
+      callback(new Error('peer has invalid upring metadata'))
       return
     }
 
@@ -282,7 +283,7 @@ UpRing.prototype.fire = function (obj, callback, _count) {
     if (typeof _count !== 'number') {
       _count = 0
     } else if (_count === 3) {
-      callback.call(this, new Error('retried three times'))
+      callback(new Error('retried three times'))
       return
     } else {
       _count++
@@ -305,7 +306,7 @@ UpRing.prototype.fire = function (obj, callback, _count) {
           return
         }
       }
-      callback.call(this, err)
+      callback(err)
     })
   }
 
