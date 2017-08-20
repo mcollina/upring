@@ -267,7 +267,8 @@ UpRing.prototype.fire = function (obj, callback, _count) {
 
   if (this._hashring.allocatedToMe(obj.key)) {
     this.logger.trace({ msg: obj }, 'local call')
-    this._dispatch(obj, dezalgo(callback))
+    callback()
+    this._dispatch(obj, noop)
   } else {
     const peer = this._hashring.lookup(obj.key)
     this.logger.trace({ msg: obj, peer }, 'remote call')
@@ -348,5 +349,7 @@ UpRing.prototype.add = function (pattern, schema, func) {
 
   this._router.add(pattern, func)
 }
+
+function noop () {}
 
 module.exports = UpRing
