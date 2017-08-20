@@ -32,6 +32,7 @@ function UpRing (opts) {
   this._inbound = new Set()
   this.logger = opts.logger ? opts.logger.child({ serializers }) : pino({ serializers })
   this.info = {}
+  this._fireCallback = fireCallback.bind(this)
   this.isReady = false
 
   if (!opts.logger) {
@@ -211,10 +212,10 @@ UpRing.prototype.request = function (obj, callback, _count) {
     this.logger.trace({ msg: obj }, 'local call')
     this._dispatch(obj, dezalgo(callback))
   } else {
-    let peer = this._hashring.lookup(obj.key)
+    const peer = this._hashring.lookup(obj.key)
     this.logger.trace({ msg: obj, peer }, 'remote call')
 
-    let upring = peer.meta.upring
+    const upring = peer.meta.upring
     if (!upring || !upring.address || !upring.port) {
       callback(new Error('peer has invalid upring metadata'))
       return
@@ -235,7 +236,7 @@ UpRing.prototype.request = function (obj, callback, _count) {
 
     if (conn.destroyed) {
       // TODO make this dependent on the gossip interval
-      setTimeout(retry, 500, this, obj, callback, _count)
+      setTimeout(retry, 500, this, 'request', obj, callback, _count)
       return
     }
 
@@ -244,7 +245,7 @@ UpRing.prototype.request = function (obj, callback, _count) {
         // the peer has changed
         if (this._hashring.lookup(obj.key).id !== peer.id || conn.destroyed) {
           // TODO make this dependent on the gossip interval
-          setTimeout(retry, 500, this, obj, callback, _count)
+          setTimeout(retry, 500, this, 'request', obj, callback, _count)
           return
         }
       }
@@ -257,8 +258,70 @@ UpRing.prototype.request = function (obj, callback, _count) {
 
 UpRing.prototype.requestp = promisify(UpRing.prototype.request)
 
-function retry (that, obj, callback, _count) {
-  that.request(obj, callback, _count)
+UpRing.prototype.fire = function (obj, callback, _count) {
+  callback = callback || this._fireCallback
+  if (!this.isReady) {
+    this.once('up', this.fire.bind(this, obj, callback))
+    return
+  }
+
+  if (this._hashring.allocatedToMe(obj.key)) {
+    this.logger.trace({ msg: obj }, 'local call')
+    callback()
+    this._dispatch(obj, noop)
+  } else {
+    const peer = this._hashring.lookup(obj.key)
+    this.logger.trace({ msg: obj, peer }, 'remote call')
+
+    const upring = peer.meta.upring
+    if (!upring || !upring.address || !upring.port) {
+      callback(new Error('peer has invalid upring metadata'))
+      return
+    }
+
+    // TODO simplify all this logic
+    // and avoid allocating a closure
+    if (typeof _count !== 'number') {
+      _count = 0
+    } else if (_count === 3) {
+      callback(new Error('retried three times'))
+      return
+    } else {
+      _count++
+    }
+
+    const conn = this.peerConn(peer)
+
+    if (conn.destroyed) {
+      // TODO make this dependent on the gossip interval
+      setTimeout(retry, 500, this, 'fire', obj, callback, _count)
+      return
+    }
+
+    conn.fire(obj, (err) => {
+      if (err) {
+        // the peer has changed
+        if (this._hashring.lookup(obj.key).id !== peer.id || conn.destroyed) {
+          // TODO make this dependent on the gossip interval
+          setTimeout(retry, 500, this, 'fire', obj, callback, _count)
+          return
+        }
+      }
+      callback(err)
+    })
+  }
+
+  return this
+}
+
+function fireCallback (err) {
+  if (err) {
+    this.logger.debug(err, 'fire and forget')
+  }
+}
+
+function retry (that, method, obj, callback, _count) {
+  that[method](obj, callback, _count)
 }
 
 UpRing.prototype.add = function (pattern, schema, func) {
@@ -286,5 +349,7 @@ UpRing.prototype.add = function (pattern, schema, func) {
 
   this._router.add(pattern, func)
 }
+
+function noop () {}
 
 module.exports = UpRing
