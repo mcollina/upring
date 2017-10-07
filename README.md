@@ -35,7 +35,7 @@ Check out:
   monitoring dashboard for your upring cluster. See the demo at
   https://youtu.be/fLDOCwiKbbo.
 
-We recommend using [baseswim](http://github.com/upringjs/baseswim) to
+We recommend using [baseswim](http://github.com/mcollina/baseswim) to
 run a base node. It also available as a tiny docker image.
 
 <a name="api"></a>
