@@ -30,13 +30,13 @@ function UpRing (opts) {
   const app = avvio(this)
 
   this._inbound = new Set()
-  this.logger = opts.logger ? opts.logger.child({ serializers }) : pino({ serializers })
+  this.log = opts.logger ? opts.logger.child({ serializers }) : pino({ serializers })
   this.info = {}
   this._fireCallback = fireCallback.bind(this)
   this.isReady = false
 
   if (!opts.logger) {
-    this.logger.level = opts.logLevel || 'info'
+    this.log.level = opts.logLevel || 'info'
   }
 
   this
@@ -104,7 +104,7 @@ function UpRing (opts) {
     that._hashring.close()
 
     that._server.close((err) => {
-      that.logger.info('closed')
+      that.log.info('closed')
       that.emit('close')
       cb(err)
     })
@@ -139,7 +139,7 @@ UpRing.prototype.peerConn = function (peer) {
   let conn = this._peers[peer.id]
 
   if (!conn) {
-    this.logger.debug({ peer: peer }, 'connecting to peer')
+    this.log.debug({ peer: peer }, 'connecting to peer')
     const upring = peer.meta.upring
     const stream = net.connect(upring.port, upring.address)
     conn = setupConn(this, peer, stream)
@@ -152,12 +152,12 @@ function setupConn (that, peer, stream, retry) {
   const conn = tentacoli()
 
   pump(stream, conn, stream, function () {
-    that.logger.debug({ peer: peer }, 'peer disconnected')
+    that.log.debug({ peer: peer }, 'peer disconnected')
     var nustream = null
     that._hashring.on('peerDown', onPeerDown)
 
     if (!retry) {
-      that.logger.debug({ peer: peer }, 'reconnecting to peer')
+      that.log.debug({ peer: peer }, 'reconnecting to peer')
       nustream = net.connect(peer.meta.upring.port, peer.meta.upring.address)
       nustream.on('connect', onConnect)
       nustream.on('error', onError)
@@ -165,7 +165,7 @@ function setupConn (that, peer, stream, retry) {
 
     function onPeerDown (peerDown) {
       if (peerDown.id === peer.id) {
-        that.logger.debug({ peer: peer }, 'peer down')
+        that.log.debug({ peer: peer }, 'peer down')
         delete that._peers[peer.id]
         that._hashring.removeListener('peerDown', onPeerDown)
         if (nustream) {
@@ -175,7 +175,7 @@ function setupConn (that, peer, stream, retry) {
     }
 
     function onConnect () {
-      that.logger.debug({ peer: peer }, 'reconnected')
+      that.log.debug({ peer: peer }, 'reconnected')
       setupConn(that, peer, nustream, true)
       that._hashring.removeListener('peerDown', onPeerDown)
     }
@@ -209,11 +209,11 @@ UpRing.prototype.request = function (obj, callback, _count) {
   }
 
   if (this._hashring.allocatedToMe(obj.key)) {
-    this.logger.trace({ msg: obj }, 'local call')
+    this.log.trace({ msg: obj }, 'local call')
     this._dispatch(obj, dezalgo(callback))
   } else {
     const peer = this._hashring.lookup(obj.key)
-    this.logger.trace({ msg: obj, peer }, 'remote call')
+    this.log.trace({ msg: obj, peer }, 'remote call')
 
     const upring = peer.meta.upring
     if (!upring || !upring.address || !upring.port) {
@@ -266,12 +266,12 @@ UpRing.prototype.fire = function (obj, callback, _count) {
   }
 
   if (this._hashring.allocatedToMe(obj.key)) {
-    this.logger.trace({ msg: obj }, 'local call')
+    this.log.trace({ msg: obj }, 'local call')
     callback()
     this._dispatch(obj, noop)
   } else {
     const peer = this._hashring.lookup(obj.key)
-    this.logger.trace({ msg: obj, peer }, 'remote call')
+    this.log.trace({ msg: obj, peer }, 'remote call')
 
     const upring = peer.meta.upring
     if (!upring || !upring.address || !upring.port) {
@@ -316,7 +316,7 @@ UpRing.prototype.fire = function (obj, callback, _count) {
 
 function fireCallback (err) {
   if (err) {
-    this.logger.debug(err, 'fire and forget')
+    this.log.debug(err, 'fire and forget')
   }
 }
 
