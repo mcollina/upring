@@ -53,7 +53,7 @@ run a base node. It also available as a tiny docker image.
   * <a href="#allocatedToMe"><code>instance.<b>allocatedToMe()</b></code></a>
   * <a href="#track"><code>instance.<b>track()</b></code></a>
   * <a href="#info"><code>instance.<b>info</b></code></a>
-  * <a href="#logger"><code>instance.<b>logger</b></code></a>
+  * <a href="#log"><code>instance.<b>log</b></code></a>
   * <a href="#close"><code>instance.<b>close()</b></code></a>
   * <a href="#avvio"><code>instance.<b>use()</b></code></a>
   * <a href="#avvio"><code>instance.<b>after()</b></code></a>
@@ -330,8 +330,8 @@ Flag this upring instance as replicating the given key.
 
 Close the current instance
 
-<a name="logger"></a>
-### instance.logger
+<a name="log"></a>
+### instance.log
 
 A [pino][pino] instance to log stuff to.
 

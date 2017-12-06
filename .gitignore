@@ -35,3 +35,9 @@ node_modules
 
 package-lock.json
 yarn.lock
+
+# mac files
+.DS_Store
+
+# vim swap files
+*.swp
