@@ -11,9 +11,10 @@
 **UpRing** simplifies the implementation and deployment of a cluster of nodes using a gossip membership protocol and a [consistent hashing](https://en.wikipedia.org/wiki/Consistent_hashing) scheme (see [swim-hashring](https://github.com/upringjs/swim-hashring)). It uses [tentacoli](https://github.com/mcollina/tentacoli) as a transport layer.
 
 * [Installation](#install)
-* [Examples](#examples)
+* [Plugins](#plugins)
 * [API](#api)
 * [Monitoring](#monitoring)
+* [Demo](#demo)
 * [Acknowledgements](#acknowledgements)
 * [License](#license)
 
@@ -23,20 +24,17 @@
 npm i upring
 ```
 
-## Examples
+## Plugins
+Upring is extensible via thanks to a powerful plugins system.
 
-Check out:
-
-* [upring-kv](https://github.com/upringjs/upring-kv), a scalable key/value
-  store accessible over HTTP.
-* [upring-pubsub](https://github.com/upringjs/upring-pubsub), a scalable
+* [`upring-kv`](https://github.com/upringjs/upring-kv) - a scalable key/value store on top of Upring.
+* [`upring-pubsub`](https://github.com/upringjs/upring-pubsub) - a scalable
   publish subscribe system without a central broker.
-* [upring-control](https://github.com/upringjs/upring-control), a
-  monitoring dashboard for your upring cluster. See the demo at
+* [`upring-set`](https://github.com/upringjs/upring-set) - Redis set api on top of Upring.
+* [`upring-control`](https://github.com/upringjs/upring-control) - a
+  monitoring dashboard for your upring cluster.  
+  See the demo at
   https://youtu.be/fLDOCwiKbbo.
-
-We recommend using [baseswim](http://github.com/mcollina/baseswim) to
-run a base node. It also available as a tiny docker image.
 
 <a name="api"></a>
 ## API
@@ -450,6 +448,11 @@ upring
 ```
 You can also use `ready` if you need to know when everything is ready but the `up` event has not been fired yet.  
 If you need more info about how this lifecycle works, take a look to the [avvio](https://github.com/mcollina/avvio) documentation.
+
+## Demo
+You can try a demo that uses [`upring-kv`](https://github.com/upringjs/upring-kv) [here](https://github.com/upringjs/kv-demo).  
+We recommend using [baseswim](http://github.com/mcollina/baseswim) to
+run a base node. It also available as a tiny docker image.
 
 ## Acknowledgements
 
