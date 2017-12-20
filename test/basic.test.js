@@ -176,7 +176,7 @@ test('request to node 2', { timeout: 5000 }, (t) => {
 
     i2.on('request', (req, reply) => {
       t.pass('request to i2')
-      t.deepEqual(req, { hello: 'world' }, 'correct message')
+      t.strictEqual(req.hello, 'world', 'correct message')
       reply(null, { a: 'response' })
     })
 
@@ -331,4 +331,100 @@ test('async await support', t => {
     t.pass('Skip because Node version < 8')
   }
   t.end()
+})
+
+test('every request should have an id and a child logger', { timeout: 5000 }, (t) => {
+  t.plan(12)
+
+  bootTwo(t, (i1, i2) => {
+    let i1Key = getKey(i1)
+    let i2Key = getKey(i2)
+
+    i1.request({
+      key: i2Key,
+      hello: 42
+    }, (err, response) => {
+      t.error(err)
+      t.ok(response.log)
+      delete response.log
+      t.deepEqual(response, {
+        replying: 'i2',
+        id: 1
+      }, 'response matches')
+    })
+
+    i2.request({
+      key: i1Key,
+      hello: 42
+    }, (err, response) => {
+      t.error(err)
+      t.ok(response.log)
+      delete response.log
+      t.deepEqual(response, {
+        replying: 'i1',
+        id: 1
+      }, 'response matches')
+    })
+
+    i1.on('request', (req, reply) => {
+      t.ok(req.id === 1)
+      t.ok(req.log)
+      reply(null, { replying: 'i1' })
+    })
+
+    i2.on('request', (req, reply) => {
+      t.ok(req.id === 1)
+      t.ok(req.log)
+      reply(null, { replying: 'i2' })
+    })
+  })
+})
+
+test('request and response should keep the id', { timeout: 5000 }, (t) => {
+  t.plan(12)
+
+  bootTwo(t, (i1, i2) => {
+    let i1Key = getKey(i1)
+    let i2Key = getKey(i2)
+
+    i1.request({
+      key: i2Key,
+      hello: 42,
+      id: 'abc'
+    }, (err, response) => {
+      t.error(err)
+      t.ok(response.log)
+      delete response.log
+      t.deepEqual(response, {
+        replying: 'i2',
+        id: 'abc'
+      }, 'response matches')
+    })
+
+    i2.request({
+      key: i1Key,
+      hello: 42,
+      id: 123
+    }, (err, response) => {
+      t.error(err)
+      t.ok(response.log)
+      delete response.log
+      t.deepEqual(response, {
+        replying: 'i1',
+        id: 123
+      }, 'response matches')
+    })
+
+    i1.on('request', (req, reply) => {
+      t.ok(req.id === 123)
+      t.ok(req.log)
+      reply(null, { replying: 'i1' })
+    })
+
+    i2.on('request', (req, reply) => {
+      t.ok(req.id === 'abc')
+      t.ok(req.log)
+      reply(null, { replying: 'i2' })
+    })
+  })
 })
