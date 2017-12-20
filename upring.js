@@ -208,6 +208,8 @@ UpRing.prototype.request = function (obj, callback, _count) {
     return
   }
 
+  obj.id = this.genReqId(obj)
+
   if (this._hashring.allocatedToMe(obj.key)) {
     this.log.trace({ msg: obj }, 'local call')
     this._dispatch(obj, dezalgo(callback))
@@ -248,6 +250,10 @@ UpRing.prototype.request = function (obj, callback, _count) {
           setTimeout(retry, 500, this, 'request', obj, callback, _count)
           return
         }
+      }
+      if (obj.id != null) {
+        result.id = obj.id
+        result.log = this.log.child({ reqId: result.id })
       }
       callback(err, result)
     })
