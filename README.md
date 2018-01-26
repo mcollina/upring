@@ -467,6 +467,6 @@ MIT
 [npm-url]: https://badge.fury.io/js/upring
 [travis-badge]: https://api.travis-ci.org/upringjs/upring.svg
 [travis-url]: https://travis-ci.org/upringjs/upring
-[pino]: https://github.com/upringjs/pino
+[pino]: https://github.com/pinojs/pino
 [coveralls-badge]: https://coveralls.io/repos/github/upringjs/upring/badge.svg?branch=master
 [coveralls-url]: https://coveralls.io/github/upringjs/upring?branch=master
